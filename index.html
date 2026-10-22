@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="营销平台接口未返回 N7 车系解决方案说明" />
+    <meta name="theme-color" content="#0b1729" />
+    <title>N7 车系数据补录解决方案</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="返回顶部">
+        <span class="brand-mark">TCS</span>
+        <span class="brand-copy"><strong>微信车户调研平台</strong><small>PRODUCT NOTE · 2026</small></span>
+      </a>
+      <nav aria-label="页面导航">
+        <a href="#background">01 背景</a>
+        <a href="#scenarios">02 影响场景</a>
+        <a href="#solution">03 解决方案</a>
+      </nav>
+      <span class="doc-status"><i></i>方案待实施</span>
+    </header>
+
+    <main id="top">
+      <section class="hero section-shell">
+        <div class="hero-main">
+          <div class="eyebrow"><span>PRODUCT SOLUTION</span><b>01 / 03</b></div>
+          <h1>营销平台接口未返回<br /><em>N7</em> 车系解决方案</h1>
+          <p class="hero-lead">通过问卷平台本地补录 N7 车系，保障新建、复制、报表筛选以及用户触达场景能继续选择原 N7。</p>
+          <div class="hero-actions">
+            <a class="primary-action" href="#solution">查看解决方案 <span>↓</span></a>
+            <span class="meta">SCOPE <strong>车系基础数据</strong></span>
+            <span class="meta">SYSTEM <strong>TCS 问卷平台</strong></span>
+          </div>
+        </div>
+        <aside class="hero-aside" aria-label="核心结论">
+          <div class="result-number">01</div>
+          <p class="result-label">核心结论</p>
+          <h2>不改动营销平台，<br />在问卷侧补齐 N7。</h2>
+          <div class="result-flow" aria-label="数据处理流程">
+            <span>营销平台<br /><b>新 N7</b></span><i>→</i><span>问卷平台<br /><b>新 N7 + N7</b></span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="problem section-shell" id="background">
+        <div class="section-index"><span>01</span><small>BACKGROUND</small></div>
+        <div class="section-content">
+          <div class="section-title">
+            <p>问题背景</p>
+            <h2>同一基准车系编码，<br />导致旧车系被“覆盖”</h2>
+          </div>
+          <div class="problem-grid">
+            <article class="explain-card">
+              <span class="card-no">A</span><h3>业务变更</h3>
+              <p>车型科授意运营侧，在营销平台将 <strong>N7</strong> 直接改名为 <strong>新 N7</strong>，没有新建车系。</p>
+            </article>
+            <article class="explain-card">
+              <span class="card-no">B</span><h3>技术原因</h3>
+              <p>两个名称沿用了同一个<strong>基准车系编码</strong>；问卷后台恰好通过该编码获取车系。</p>
+            </article>
+            <article class="explain-card highlight">
+              <span class="card-no">C</span><h3>最终结果</h3>
+              <p>营销平台接口只返回 <strong>新 N7</strong>，问卷后台的车系下拉列表中不再显示 N7。</p>
+            </article>
+          </div>
+          <div class="logic-strip">
+            <div><small>原始数据</small><strong>N7</strong></div><i>改名／编码不变</i>
+            <div><small>营销平台</small><strong>新 N7</strong></div><i>按基准编码获取</i>
+            <div class="danger"><small>问卷后台</small><strong>仅新 N7</strong></div>
+          </div>
+          <p class="scope-note"><b>说明</b>本次获取的车系与推送人群关联的车系无关，不影响人群圈选逻辑。</p>
+        </div>
+      </section>
+
+      <section class="scenarios section-shell" id="scenarios">
+        <div class="section-index"><span>02</span><small>IMPACT</small></div>
+        <div class="section-content">
+          <div class="section-title title-row">
+            <div><p>问题梳理</p><h2>车系数据的 4 个使用场景</h2></div>
+            <p class="title-note">前两项为当前已用场景，<br />后两项为拟使用场景。</p>
+          </div>
+
+          <article class="scenario scenario-wide">
+            <div class="scenario-copy"><span class="scenario-id">01</span><div><p class="state current">当前已用</p><h3>创建 &amp; 复制问卷弹窗</h3><p>在“关联车系”下拉框中选择问卷对应车系；缺少 N7 后，旧车系问卷无法正确关联。</p></div></div>
+            <figure class="screen large" data-zoom>
+              <img src="assets/01-questionnaire-car-series.png" alt="创建问卷弹窗中的关联车系下拉框" />
+              <figcaption><span>图 1</span>创建问卷——关联车系 <button type="button">点击查看大图 ↗</button></figcaption>
+            </figure>
+          </article>
+
+          <article class="scenario scenario-wide">
+            <div class="scenario-copy"><span class="scenario-id">02</span><div><p class="state current">当前已用</p><h3>答题时长统计页面</h3><p>问卷维度列表与车型维度列表，都通过“车系名称”进行筛选。</p></div></div>
+            <figure class="screen large" data-zoom>
+              <img src="assets/02-duration-report-filter.png" alt="答题时长统计页面的车系名称筛选项" />
+              <figcaption><span>图 2</span>答题时长统计——车系名称筛选 <button type="button">点击查看大图 ↗</button></figcaption>
+            </figure>
+          </article>
+
+          <div class="future-grid">
+            <article class="scenario compact">
+              <div class="scenario-copy"><span class="scenario-id">03</span><div><p class="state future">拟使用</p><h3>短信模板</h3><p>短信内容中需要动态带入目标车系名称。</p></div></div>
+              <figure class="screen sms" data-zoom>
+                <div class="sms-frame"><img src="assets/03-sms-template.png" alt="短信模板中的车系名称 N7" /></div>
+                <figcaption><span>图 3</span>短信模板车系占位 <button type="button">查看大图 ↗</button></figcaption>
+              </figure>
+            </article>
+            <article class="scenario compact">
+              <div class="scenario-copy"><span class="scenario-id">04</span><div><p class="state future">拟使用</p><h3>问卷前端首页富文本</h3><p>问卷开始页的富文本需展示用户对应车系。</p></div></div>
+              <figure class="screen phone" data-zoom>
+                <div class="phone-frame"><img src="assets/04-survey-home-rich-text.png" alt="问卷前端首页富文本中的车系名称" /></div>
+                <figcaption><span>图 4</span>问卷首页富文本 <button type="button">查看大图 ↗</button></figcaption>
+              </figure>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="solution section-shell" id="solution">
+        <div class="section-index light"><span>03</span><small>SOLUTION</small></div>
+        <div class="section-content">
+          <div class="solution-head">
+            <div><p>解决方案</p><h2>接口同步后，<br />由问卷平台手动补录 N7</h2></div>
+            <div class="solution-tag"><span>✦</span><p><small>实施方式</small><strong>最小改动</strong></p></div>
+          </div>
+          <div class="solution-flow">
+            <article><span>01</span><small>SOURCE</small><h3>调用营销平台<br />车系接口</h3><p>正常获取当前车系列表，保留“新 N7”。</p></article><i>→</i>
+            <article class="active"><span>02</span><small>PATCH</small><h3>在问卷平台<br />手动补录 N7</h3><p>将 N7 作为补充数据写入可用车系列表。</p></article><i>→</i>
+            <article><span>03</span><small>OUTPUT</small><h3>后台与前端<br />同时可选 N7</h3><p>所有车系下拉、筛选与文本场景恢复可用。</p></article>
+          </div>
+          <div class="delivery-grid">
+            <article class="delivery-card">
+              <p>交付后可达成</p>
+              <ul><li><span>✓</span>新建问卷时可选 N7</li><li><span>✓</span>复制问卷时可保留 N7 关联</li><li><span>✓</span>统计报表可按 N7 筛选</li><li><span>✓</span>短信模板可带入 N7</li><li><span>✓</span>问卷首页富文本可展示 N7</li></ul>
+            </article>
+            <article class="acceptance-card">
+              <div class="acceptance-top"><span>ACCEPTANCE</span><b>05</b></div><h3>验收口径</h3>
+              <p>在上述 5 个操作节点中，均能检索、选择或展示 <strong>N7</strong>；同时“新 N7”保持正常可用。</p>
+            </article>
+          </div>
+          <div class="boundary"><span>范围边界</span><p>本方案仅补齐问卷平台的车系基础数据，不修改营销平台原数据，不改变推送人群与车系的关联逻辑。</p></div>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>TCS · 微信车户调研平台</span><p>N7 CAR SERIES DATA COMPLETION SOLUTION</p><a href="#top">回到顶部 ↑</a></footer>
+    <dialog class="lightbox" id="lightbox"><button class="lightbox-close" type="button" aria-label="关闭大图">×</button><img src="" alt="" /><p></p></dialog>
+    <script src="app.js"></script>
+  </body>
+</html>
