@@ -163,8 +163,9 @@ thead th:first-child, tbody td:first-child { position: sticky; z-index: 4; left:
 thead th:first-child { z-index: 5; background: #f7fafb; } tbody tr:nth-child(odd) td:first-child { background: #fff; } tbody tr:nth-child(even) td:first-child { background: #fbfdfe; } tbody tr:hover td:first-child { background: #f1f9fe; }
 .status { display: inline-flex; align-items: center; gap: 5px; }
 .status::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #a5b2ba; }
-.status-已点评 { color: #208765; } .status-已点评::before { background: #36bd8c; }
-.status-待点评 { color: #a67b24; } .status-待点评::before { background: #e7ad3b; }
+.status-未填写 { color: #7b8b95; } .status-未填写::before { background: #a8b5bd; }
+.status-填写中 { color: #a67b24; } .status-填写中::before { background: #e7ad3b; }
+.status-已完成 { color: #208765; } .status-已完成::before { background: #36bd8c; }
 .anomaly-id { width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 5px; font-weight: 750; }
 .anomaly-id-C { color: #9c552a; background: #fff0e6; }
 .anomaly-id-R { color: #b23d4b; background: #ffebee; }
