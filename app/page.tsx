@@ -56,7 +56,7 @@ function MultiSelect({ label, options, value, onChange }: { label: string; optio
   };
 
   return (
-    <details className="multi-select">
+    <details className="multi-select filter-popup">
       <summary aria-label={`${label}，可多选`}><span className={selected.length ? "has-value" : ""}>{selected.length ? selected.join("、") : "请选择，可多选"}</span><i>⌄</i></summary>
       <div className="multi-options">
         <div className="multi-options-head"><span>已选 {selected.length} 项</span>{selected.length > 0 && <button type="button" onClick={() => onChange("")}>清空</button>}</div>
@@ -132,7 +132,7 @@ function DateRangePicker({ start, end, onChange }: { start: string; end: string;
   );
 
   return (
-    <details className="date-picker" ref={detailsRef}>
+    <details className="date-picker filter-popup" ref={detailsRef}>
       <summary aria-label="选择点评时间范围">
         <span className={start ? "has-value" : ""}>{start || "开始日期"}</span>
         <i>→</i>
@@ -336,6 +336,25 @@ export default function Home() {
     const timer = window.setTimeout(() => setNotice(""), 2200);
     return () => window.clearTimeout(timer);
   }, [notice]);
+
+  useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      document.querySelectorAll<HTMLDetailsElement>("details.filter-popup[open]").forEach((popup) => {
+        if (!popup.contains(target)) popup.removeAttribute("open");
+      });
+    };
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      document.querySelectorAll<HTMLDetailsElement>("details.filter-popup[open]").forEach((popup) => popup.removeAttribute("open"));
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeWithEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, []);
 
   const allRows = useMemo(() => buildRows(activePage), [activePage]);
   const columns = columnsByPage[activePage];
