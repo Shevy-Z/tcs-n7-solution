@@ -45,6 +45,7 @@ const filters: Filter[] = [
   { key: "province", label: "省", type: "text", placeholder: "请输入省" },
   { key: "city", label: "市", type: "text", placeholder: "请输入市" },
   { key: "dealer", label: "专营店名称", type: "text", placeholder: "请输入专营店名称" },
+  { key: "anomalyId", label: "ID", type: "multi", options: ["C", "R", "T", "H", "空值（未检出异常）"] },
 ];
 
 function MultiSelect({ label, options, value, onChange }: { label: string; options: readonly string[]; value: string; onChange: (value: string) => void }) {
@@ -254,6 +255,7 @@ export default function Home() {
 
   const allRows = useMemo(() => buildRows(activePage), [activePage]);
   const columns = columnsByPage[activePage];
+  const visibleFilters = activePage === "survey" ? filters.filter((filter) => filter.key !== "anomalyId") : filters;
   const visibleRows = useMemo(() => {
     const activeEntries = Object.entries(applied).filter(([key, value]) => value && value !== "全部" && key !== "commentTimeStart" && key !== "commentTimeEnd");
     const start = applied.commentTimeStart;
@@ -262,6 +264,10 @@ export default function Home() {
     return allRows.filter((row) => {
       const valuesMatch = activeEntries.every(([key, value]) => {
         if (key === "mis" || key === "seriesCode") return value.split(",").includes(String(row[key] ?? ""));
+        if (key === "anomalyId") {
+          const rowValue = String(row.anomalyId ?? "");
+          return value.split(",").some((option) => option === "空值（未检出异常）" ? rowValue === "" : rowValue === option);
+        }
         return String(row[key] ?? "").toLowerCase().includes(value.toLowerCase());
       });
       if (!valuesMatch) return false;
@@ -351,13 +357,13 @@ export default function Home() {
 
           <section className={`filter-card ${filtersOpen ? "" : "filter-card--closed"}`}>
             <div className="filter-head">
-              <div><span className="section-kicker">FILTER</span><h2>筛选条件</h2><em>{filters.length} 项</em></div>
+              <div><span className="section-kicker">FILTER</span><h2>筛选条件</h2><em>{visibleFilters.length} 项</em></div>
               <button type="button" onClick={() => setFiltersOpen((value) => !value)}>{filtersOpen ? "收起" : "展开"}<span>{filtersOpen ? "⌃" : "⌄"}</span></button>
             </div>
             {filtersOpen && (
               <div className="filter-body">
                 <div className="filter-grid">
-                  {filters.map((filter) => (
+                  {visibleFilters.map((filter) => (
                     <label className="field" key={filter.key}>
                       <span>{filter.label}</span>
                       {filter.type === "select" ? (
