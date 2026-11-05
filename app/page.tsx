@@ -6,21 +6,32 @@ type PageKey = "question" | "customer" | "survey";
 type Row = Record<string, string | number>;
 type Column = { key: string; label: string; sublabel?: string; width?: number; group?: "base" | "region" | "detail" };
 
+type Filter = {
+  key: string;
+  label: string;
+  type: "text" | "select" | "multi" | "date-range";
+  placeholder?: string;
+  options?: readonly string[];
+};
+
+const misOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "18", "19", "20", "21", "22", "24", "26", "28", "29", "31", "32", "44", "85", "217", "218", "255"];
+const seriesCodeOptions = ["AC0", "AE0", "CE0", "L34"];
+
 const pageInfo: Record<PageKey, { label: string; hint: string }> = {
-  question: { label: "问题表明细", hint: "多层级问题与答案明细" },
+  question: { label: "其它问题表明细", hint: "多层级问题与答案明细" },
   customer: { label: "客户表明细", hint: "客户评分指标明细" },
   survey: { label: "问卷报表明细", hint: "问卷发放与多层级评分明细" },
 };
 
-const filters = [
+const filters: Filter[] = [
   { key: "planId", label: "方案ID", type: "text", placeholder: "请输入方案ID" },
-  { key: "surveyType", label: "问卷类型", type: "select", options: ["全部", "销售满意度", "售后满意度", "专项调研"] },
+  { key: "surveyType", label: "问卷类型", type: "select", options: ["全部", "NPS", "CCS", "ADAS", "专项"] },
   { key: "surveyId", label: "问卷ID", type: "text", placeholder: "请输入问卷ID" },
   { key: "pushId", label: "推送ID", type: "text", placeholder: "请输入推送ID" },
   { key: "commentStatus", label: "点评状态", type: "select", options: ["全部", "待点评", "已点评", "无需点评"] },
-  { key: "commentTime", label: "点评时间", type: "date" },
-  { key: "mis", label: "MIS", type: "text", placeholder: "请输入MIS" },
-  { key: "seriesCode", label: "车系编码", type: "text", placeholder: "请输入车系编码" },
+  { key: "commentTime", label: "点评时间", type: "date-range" },
+  { key: "mis", label: "MIS", type: "multi", options: misOptions },
+  { key: "seriesCode", label: "车系编码", type: "multi", options: seriesCodeOptions },
   { key: "code18", label: "18位码", type: "text", placeholder: "请输入18位码" },
   { key: "vin", label: "VIN", type: "text", placeholder: "请输入VIN" },
   { key: "region", label: "大区", type: "select", options: ["全部", "东区", "南区", "西区", "北区"] },
@@ -28,7 +39,30 @@ const filters = [
   { key: "province", label: "省", type: "text", placeholder: "请输入省" },
   { key: "city", label: "市", type: "text", placeholder: "请输入市" },
   { key: "dealer", label: "专营店名称", type: "text", placeholder: "请输入专营店名称" },
-] as const;
+];
+
+function MultiSelect({ label, options, value, onChange }: { label: string; options: readonly string[]; value: string; onChange: (value: string) => void }) {
+  const selected = value ? value.split(",") : [];
+  const toggle = (option: string) => {
+    const next = selected.includes(option) ? selected.filter((item) => item !== option) : [...selected, option];
+    onChange(next.join(","));
+  };
+
+  return (
+    <details className="multi-select">
+      <summary aria-label={`${label}，可多选`}><span className={selected.length ? "has-value" : ""}>{selected.length ? selected.join("、") : "请选择，可多选"}</span><i>⌄</i></summary>
+      <div className="multi-options">
+        <div className="multi-options-head"><span>已选 {selected.length} 项</span>{selected.length > 0 && <button type="button" onClick={() => onChange("")}>清空</button>}</div>
+        {options.map((option) => (
+          <label key={option}>
+            <input type="checkbox" checked={selected.includes(option)} onChange={() => toggle(option)} />
+            <span>{option}</span>
+          </label>
+        ))}
+      </div>
+    </details>
+  );
+}
 
 const baseColumns: Column[] = [
   { key: "no", label: "序号", width: 68, group: "base" },
@@ -130,13 +164,13 @@ function buildRows(page: PageKey): Row[] {
     const base: Row = {
       no: index + 1,
       planId: index < 8 ? "118" : "126",
-      surveyType: index % 3 === 2 ? "售后满意度" : "销售满意度",
+      surveyType: ["NPS", "CCS", "ADAS", "专项"][index % 4],
       surveyId: index % 3 === 2 ? "Q20261012" : "Q20260901",
       pushId: ["97051", "96905", "96676", "96674", "96576"][index % 5],
       commentStatus: index % 4 === 0 ? "已点评" : "待点评",
       commentTime: index % 4 === 0 ? "2026-10-31 15:36:43" : "—",
-      mis: ["19", "24", "36"][index % 3],
-      seriesCode: index % 2 === 0 ? "DFL7160" : "DFL6480",
+      mis: ["19", "24", "31", "218"][index % 4],
+      seriesCode: seriesCodeOptions[index % seriesCodeOptions.length],
       code18: `1N4AL3AP${String(1000000000 + index).slice(-10)}`,
       vin: vins[group],
       region: group < 3 ? "东区" : "南区",
@@ -212,12 +246,21 @@ export default function Home() {
   const allRows = useMemo(() => buildRows(activePage), [activePage]);
   const columns = columnsByPage[activePage];
   const visibleRows = useMemo(() => {
-    const activeEntries = Object.entries(applied).filter(([, value]) => value && value !== "全部");
-    if (!activeEntries.length) return allRows;
-    return allRows.filter((row) => activeEntries.every(([key, value]) => {
-      if (key === "commentTime") return String(row.commentTime).startsWith(value);
-      return String(row[key] ?? "").toLowerCase().includes(value.toLowerCase());
-    }));
+    const activeEntries = Object.entries(applied).filter(([key, value]) => value && value !== "全部" && key !== "commentTimeStart" && key !== "commentTimeEnd");
+    const start = applied.commentTimeStart;
+    const end = applied.commentTimeEnd;
+    if (!activeEntries.length && !start && !end) return allRows;
+    return allRows.filter((row) => {
+      const valuesMatch = activeEntries.every(([key, value]) => {
+        if (key === "mis" || key === "seriesCode") return value.split(",").includes(String(row[key] ?? ""));
+        return String(row[key] ?? "").toLowerCase().includes(value.toLowerCase());
+      });
+      if (!valuesMatch) return false;
+      if (!start && !end) return true;
+      const rowDate = String(row.commentTime ?? "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(rowDate)) return false;
+      return (!start || rowDate >= start) && (!end || rowDate <= end);
+    });
   }, [allRows, applied]);
 
   const switchPage = (key: PageKey) => {
@@ -312,8 +355,14 @@ export default function Home() {
                         <select value={form[filter.key] ?? "全部"} onChange={(event) => setForm({ ...form, [filter.key]: event.target.value })}>
                           {filter.options?.map((option) => <option key={option}>{option}</option>)}
                         </select>
-                      ) : filter.type === "date" ? (
-                        <input type="date" value={form[filter.key] ?? ""} onChange={(event) => setForm({ ...form, [filter.key]: event.target.value })} />
+                      ) : filter.type === "multi" ? (
+                        <MultiSelect label={filter.label} options={filter.options ?? []} value={form[filter.key] ?? ""} onChange={(value) => setForm({ ...form, [filter.key]: value })} />
+                      ) : filter.type === "date-range" ? (
+                        <div className="date-range">
+                          <input aria-label="点评开始日期" type="date" value={form.commentTimeStart ?? ""} onChange={(event) => setForm({ ...form, commentTimeStart: event.target.value })} />
+                          <span>→</span>
+                          <input aria-label="点评结束日期" type="date" value={form.commentTimeEnd ?? ""} onChange={(event) => setForm({ ...form, commentTimeEnd: event.target.value })} />
+                        </div>
                       ) : (
                         <input value={form[filter.key] ?? ""} placeholder={filter.placeholder} onChange={(event) => setForm({ ...form, [filter.key]: event.target.value })} />
                       )}
