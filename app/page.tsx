@@ -16,6 +16,12 @@ type Filter = {
 
 const misOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "18", "19", "20", "21", "22", "24", "26", "28", "29", "31", "32", "44", "85", "217", "218", "255"];
 const seriesCodeOptions = ["AC0", "AE0", "CE0", "L34"];
+const anomalyLabels: Record<string, string> = {
+  C: "代答（ID识别异常）",
+  R: "结果异常（NPS/NSS异常）",
+  T: "时间异常（时间过短）",
+  H: "人工审核结果异常",
+};
 
 const pageInfo: Record<PageKey, { label: string; hint: string }> = {
   question: { label: "其它问题表明细", hint: "多层级问题与答案明细" },
@@ -85,6 +91,7 @@ const questionColumns: Column[] = [
   { key: "province", label: "省", width: 86, group: "region" },
   { key: "city", label: "市", width: 86, group: "region" },
   { key: "dealer", label: "专营店", width: 152, group: "region" },
+  { key: "anomalyId", label: "ID", width: 74, group: "detail" },
   { key: "q1", label: "第一层题目", width: 210, group: "detail" },
   { key: "a1", label: "第一层答案", width: 120, group: "detail" },
   { key: "q2", label: "第二层题目", width: 190, group: "detail" },
@@ -126,6 +133,7 @@ const customerColumns: Column[] = [
   { key: "province", label: "省", width: 86, group: "region" },
   { key: "city", label: "市", width: 86, group: "region" },
   { key: "dealer", label: "专营店名称", width: 168, group: "region" },
+  { key: "anomalyId", label: "ID", width: 74, group: "detail" },
   ...rewardColumns,
   ...customerScoreColumns,
 ];
@@ -178,6 +186,7 @@ function buildRows(page: PageKey): Row[] {
       province: group < 2 ? "上海市" : group === 2 ? "江苏省" : "浙江省",
       city: cities[group],
       dealer: dealers[group],
+      anomalyId: ["C", "R", "T", "H", ""][index % 5],
       q1: index % 2 ? "【必填】车辆整体评分为何？" : "【必填】车辆整体满意度如何？",
       a1: index % 4 === 0 ? "4 - 满意" : "5 - 非常满意",
       q2: index % 3 === 0 ? "最满意的车辆表现是？" : "—",
@@ -397,7 +406,12 @@ export default function Home() {
                 <tbody>
                   {visibleRows.length ? visibleRows.map((row) => (
                     <tr key={`${activePage}-${row.no}`}>
-                      {columns.map((column) => <td key={column.key} title={String(row[column.key] ?? "—")}><span className={column.key === "commentStatus" ? `status status-${row.commentStatus}` : ""}>{row[column.key] ?? "—"}</span></td>)}
+                      {columns.map((column) => {
+                        const value = String(row[column.key] ?? "");
+                        const title = column.key === "anomalyId" ? (anomalyLabels[value] ?? "未检出异常") : (value || "—");
+                        const className = column.key === "commentStatus" ? `status status-${row.commentStatus}` : column.key === "anomalyId" && value ? `anomaly-id anomaly-id-${value}` : "";
+                        return <td key={column.key} title={title}><span className={className}>{value}</span></td>;
+                      })}
                     </tr>
                   )) : (
                     <tr><td className="empty-state" colSpan={columns.length}><b>未找到匹配记录</b><span>请调整筛选条件后重新查询</span></td></tr>
