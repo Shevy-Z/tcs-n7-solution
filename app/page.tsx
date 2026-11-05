@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type PageKey = "question" | "customer" | "survey";
 type Row = Record<string, string | number>;
@@ -66,6 +66,90 @@ function MultiSelect({ label, options, value, onChange }: { label: string; optio
             <span>{option}</span>
           </label>
         ))}
+      </div>
+    </details>
+  );
+}
+
+const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
+
+function dateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateKey(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function addMonths(date: Date, amount: number) {
+  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
+}
+
+function calendarDays(month: Date) {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const mondayOffset = (first.getDay() + 6) % 7;
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(month.getFullYear(), month.getMonth(), index - mondayOffset + 1);
+    return { date, key: dateKey(date), currentMonth: date.getMonth() === month.getMonth() };
+  });
+}
+
+function DateRangePicker({ start, end, onChange }: { start: string; end: string; onChange: (start: string, end: string) => void }) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const initialMonth = start ? parseDateKey(start) : new Date();
+  const [month, setMonth] = useState(() => new Date(initialMonth.getFullYear(), initialMonth.getMonth(), 1));
+  const rightMonth = addMonths(month, 1);
+
+  const chooseDate = (value: string) => {
+    if (!start || end) {
+      onChange(value, "");
+      return;
+    }
+    if (value < start) onChange(value, start);
+    else onChange(start, value);
+    detailsRef.current?.removeAttribute("open");
+  };
+
+  const renderMonth = (panelMonth: Date) => (
+    <div className="calendar-month">
+      <div className="calendar-title">{panelMonth.getFullYear()}年&nbsp;&nbsp;{panelMonth.getMonth() + 1}月</div>
+      <div className="calendar-week">{weekDays.map((day) => <span key={day}>{day}</span>)}</div>
+      <div className="calendar-days">
+        {calendarDays(panelMonth).map((item) => {
+          const isStart = item.key === start;
+          const isEnd = item.key === end;
+          const inRange = Boolean(start && end && item.key > start && item.key < end);
+          const isToday = item.key === dateKey(new Date());
+          const classes = [!item.currentMonth ? "outside" : "", isStart ? "range-start" : "", isEnd ? "range-end" : "", inRange ? "in-range" : "", isToday ? "today" : ""].filter(Boolean).join(" ");
+          return <button className={classes} key={item.key} type="button" onClick={() => chooseDate(item.key)} aria-label={item.key}>{item.date.getDate()}</button>;
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <details className="date-picker" ref={detailsRef}>
+      <summary aria-label="选择点评时间范围">
+        <span className={start ? "has-value" : ""}>{start || "开始日期"}</span>
+        <i>→</i>
+        <span className={end ? "has-value" : ""}>{end || "结束日期"}</span>
+        <b aria-hidden="true">▣</b>
+      </summary>
+      <div className="calendar-popover">
+        <div className="calendar-navigation calendar-navigation-left">
+          <button type="button" onClick={() => setMonth(addMonths(month, -12))} aria-label="上一年">«</button>
+          <button type="button" onClick={() => setMonth(addMonths(month, -1))} aria-label="上个月">‹</button>
+        </div>
+        <div className="calendar-navigation calendar-navigation-right">
+          <button type="button" onClick={() => setMonth(addMonths(month, 1))} aria-label="下个月">›</button>
+          <button type="button" onClick={() => setMonth(addMonths(month, 12))} aria-label="下一年">»</button>
+        </div>
+        <div className="calendar-panels">{renderMonth(month)}{renderMonth(rightMonth)}</div>
+        <div className="calendar-footer"><span>{start ? `${start}${end ? ` → ${end}` : " → 请选择结束日期"}` : "请选择开始日期"}</span><button type="button" onClick={() => onChange("", "")}>清空</button></div>
       </div>
     </details>
   );
@@ -373,11 +457,7 @@ export default function Home() {
                       ) : filter.type === "multi" ? (
                         <MultiSelect label={filter.label} options={filter.options ?? []} value={form[filter.key] ?? ""} onChange={(value) => setForm({ ...form, [filter.key]: value })} />
                       ) : filter.type === "date-range" ? (
-                        <div className="date-range">
-                          <input aria-label="点评开始日期" type="date" value={form.commentTimeStart ?? ""} onChange={(event) => setForm({ ...form, commentTimeStart: event.target.value })} />
-                          <span>→</span>
-                          <input aria-label="点评结束日期" type="date" value={form.commentTimeEnd ?? ""} onChange={(event) => setForm({ ...form, commentTimeEnd: event.target.value })} />
-                        </div>
+                        <DateRangePicker start={form.commentTimeStart ?? ""} end={form.commentTimeEnd ?? ""} onChange={(start, end) => setForm({ ...form, commentTimeStart: start, commentTimeEnd: end })} />
                       ) : (
                         <input value={form[filter.key] ?? ""} placeholder={filter.placeholder} onChange={(event) => setForm({ ...form, [filter.key]: event.target.value })} />
                       )}
