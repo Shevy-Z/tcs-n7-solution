@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import DurationStatistics from "./duration-statistics";
 import ManualReview from "./manual-review";
 import SearchableMultiSelect from "./searchable-multi-select";
+import { anomalyFilterOptions, anomalyLabels, type AuditSignals, resolveAnomalyId } from "./anomaly-id";
 
 type DetailPageKey = "question" | "customer" | "survey";
 type PageKey = DetailPageKey | "duration" | "review";
@@ -20,39 +21,6 @@ type Filter = {
 
 const misOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "18", "19", "20", "21", "22", "24", "26", "28", "29", "31", "32", "44", "85", "217", "218", "255"];
 const seriesCodeOptions = ["AC0", "AE0", "CE0", "L34"];
-const anomalyLabels: Record<string, string> = {
-  C: "代答（ID识别异常）",
-  R: "结果异常（NPS/NSS异常）",
-  T: "时间异常（时长判断过慢）",
-  H: "人工审核结果异常",
-};
-
-type AuditSignals = {
-  deviceRisk: "正常" | "异常";
-  npsQualified: "是" | "否";
-  npsScore: number;
-  salesNssScore: number;
-  serviceNssScore: number;
-  productNssScore: number;
-  durationJudgement: "正常" | "过快" | "过慢";
-  reviewStatus: "有效" | "无效";
-};
-
-function resolveAnomalyId(signals: AuditSignals) {
-  if (signals.deviceRisk === "异常") return "C";
-
-  const npsIsHigh = signals.npsScore === 9 || signals.npsScore === 10;
-  const npsIsLow = signals.npsScore >= 1 && signals.npsScore <= 6;
-  const productNssIsLow = signals.productNssScore >= 1 && signals.productNssScore <= 6;
-  const allNssAreHigh = [signals.salesNssScore, signals.serviceNssScore, signals.productNssScore].every((score) => score === 9 || score === 10);
-  const resultIsAbnormal = (signals.npsQualified === "是" && npsIsHigh && productNssIsLow)
-    || (signals.npsQualified === "否" && npsIsLow && allNssAreHigh);
-  if (resultIsAbnormal) return "R";
-
-  if (signals.durationJudgement === "过慢") return "T";
-  if (signals.reviewStatus === "无效") return "H";
-  return "";
-}
 
 function auditSignalsForRow(index: number): AuditSignals {
   const scenario = index % 5;
@@ -88,7 +56,7 @@ const filters: Filter[] = [
   { key: "province", label: "省", type: "text", placeholder: "请输入省" },
   { key: "city", label: "市", type: "text", placeholder: "请输入市" },
   { key: "dealer", label: "专营店名称", type: "text", placeholder: "请输入专营店名称" },
-  { key: "anomalyId", label: "ID", type: "multi", options: ["C", "R", "T", "H", "空值（未检出异常）"] },
+  { key: "anomalyId", label: "ID", type: "multi", options: anomalyFilterOptions },
 ];
 
 function MultiSelect({ label, options, value, onChange }: { label: string; options: readonly string[]; value: string; onChange: (value: string) => void }) {

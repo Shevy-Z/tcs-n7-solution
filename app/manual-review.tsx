@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import SearchableMultiSelect from "./searchable-multi-select";
+import { anomalyFilterOptions, anomalyLabels, resolveAnomalyId } from "./anomaly-id";
 
 type ReviewTab = "pending" | "reviewed";
 type ReviewRow = {
@@ -36,6 +37,10 @@ type ReviewRow = {
   reviewUserId?: string;
   reviewUserName?: string;
   invalidReason?: string;
+  npsScore?: number;
+  salesNssScore?: number;
+  serviceNssScore?: number;
+  productNssScore?: number;
 };
 
 const seedPending: ReviewRow[] = [
@@ -48,11 +53,11 @@ const seedPending: ReviewRow[] = [
 ];
 
 const seedReviewed: ReviewRow[] = [
-  { ...seedPending[0], id: 101, approvalNo: "834", flowName: "业测问题测试10301327-3", pushId: "9587750", commentTime: "2026-10-30 17:30:45", vin: "LGBFJ3AH07RR060435", dealer: "广州恒日｜编号：H2929", province: "广东省", city: "广州市", region: "华南区", district: "广州区", messages: 2, averageChars: 4.0, reviewStatus: "有效", reviewTime: "2026-10-30 17:31:05", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—" },
-  { ...seedPending[1], id: 102, approvalNo: "834", flowName: "业测问题测试10301327-3", pushId: "9587749", commentTime: "2026-10-30 17:18:33", vin: "LGBPP2A0221205060", dealer: "广州恒日｜编号：H2929", province: "广东省", city: "广州市", region: "华南区", district: "广州区", messages: 2, averageChars: 3.0, reviewStatus: "有效", reviewTime: "2026-10-30 17:19:21", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—" },
-  { ...seedPending[2], id: 103, approvalNo: "832", flowName: "业测问题测试10301327-1", pushId: "9587742", commentTime: "2026-10-30 16:51:32", reviewStatus: "有效", reviewTime: "2026-10-30 16:52:59", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—", messages: 3, averageChars: 2.7 },
-  { ...seedPending[3], id: 104, approvalNo: "833", flowName: "业测问题测试10301327-2", pushId: "9587746", commentStatus: "已完成", commentTime: "2026-10-30 16:48:30", vin: "LGBPPA202212050611", mis: "12", dealer: "广州恒日｜编号：H2929", province: "广东省", city: "广州市", region: "华南区", district: "广州区", durationMinutes: 0, durationQuantile: "5.0", baselineStatus: "—", messages: 2, averageChars: 2.0, reviewStatus: "有效", reviewTime: "2026-10-30 16:49:17", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—" },
-  { ...seedPending[4], id: 105, approvalNo: "832", flowName: "业测问题测试10301327-1", pushId: "9587738", messages: 3, averageChars: 2.0, reviewStatus: "无效", reviewTime: "2026-10-30 15:22:09", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "设备风险异常" },
+  { ...seedPending[0], id: 101, approvalNo: "834", flowName: "业测问题测试10301327-3", pushId: "9587750", commentTime: "2026-10-30 17:30:45", vin: "LGBFJ3AH07RR060435", dealer: "广州恒日｜编号：H2929", province: "广东省", city: "广州市", region: "华南区", district: "广州区", messages: 2, averageChars: 4.0, npsScore: 8, salesNssScore: 8, serviceNssScore: 8, productNssScore: 8, reviewStatus: "有效", reviewTime: "2026-10-30 17:31:05", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—" },
+  { ...seedPending[1], id: 102, approvalNo: "834", flowName: "业测问题测试10301327-3", pushId: "9587749", commentTime: "2026-10-30 17:18:33", vin: "LGBPP2A0221205060", dealer: "广州恒日｜编号：H2929", province: "广东省", city: "广州市", region: "华南区", district: "广州区", nps: "是", nss: "否", npsScore: 9, salesNssScore: 9, serviceNssScore: 9, productNssScore: 5, messages: 2, averageChars: 3.0, reviewStatus: "有效", reviewTime: "2026-10-30 17:19:21", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—" },
+  { ...seedPending[2], id: 103, approvalNo: "832", flowName: "业测问题测试10301327-1", pushId: "9587742", commentTime: "2026-10-30 16:51:32", npsScore: 10, salesNssScore: 9, serviceNssScore: 9, productNssScore: 9, reviewStatus: "有效", reviewTime: "2026-10-30 16:52:59", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—", messages: 3, averageChars: 2.7 },
+  { ...seedPending[3], id: 104, approvalNo: "833", flowName: "业测问题测试10301327-2", pushId: "9587746", commentStatus: "已完成", commentTime: "2026-10-30 16:48:30", vin: "LGBPPA202212050611", mis: "12", dealer: "广州恒日｜编号：H2929", province: "广东省", city: "广州市", region: "华南区", district: "广州区", duration: "过慢", durationMinutes: 0, durationQuantile: "5.0", baselineStatus: "—", npsScore: 8, salesNssScore: 8, serviceNssScore: 8, productNssScore: 8, messages: 2, averageChars: 2.0, reviewStatus: "有效", reviewTime: "2026-10-30 16:49:17", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "—" },
+  { ...seedPending[4], id: 105, approvalNo: "832", flowName: "业测问题测试10301327-1", pushId: "9587738", deviceRisk: "正常", nps: "是", nss: "是", npsScore: 9, salesNssScore: 9, serviceNssScore: 9, productNssScore: 9, messages: 3, averageChars: 2.0, reviewStatus: "无效", reviewTime: "2026-10-30 15:22:09", reviewUserId: "1", reviewUserName: "超级管理员", invalidReason: "人工复核未通过" },
 ];
 
 const selectOptions: Record<string, string[]> = {
@@ -70,7 +75,7 @@ const selectOptions: Record<string, string[]> = {
   reviewStatus: ["全部", "有效", "无效"],
 };
 
-type FieldDef = { key: string; label: string; type?: "text" | "select" | "range" | "date"; placeholder?: string; unit?: string };
+type FieldDef = { key: string; label: string; type?: "text" | "select" | "multi" | "range" | "date"; placeholder?: string; unit?: string };
 
 const pendingFields: FieldDef[] = [
   { key: "approvalNo", label: "调查审批单号", placeholder: "请输入" },
@@ -97,6 +102,7 @@ const reviewedFields: FieldDef[] = [
   { key: "brand", label: "品牌", placeholder: "请输入" },
   { key: "commentStatus", label: "点评状态", type: "select" },
   { key: "mis", label: "MIS", type: "select" },
+  { key: "anomalyId", label: "ID", type: "multi" },
   { key: "dealer", label: "门店", placeholder: "请输入门店名称" },
   { key: "province", label: "省份", type: "select" },
   { key: "city", label: "城市", type: "select" },
@@ -109,6 +115,7 @@ const reviewedFields: FieldDef[] = [
   { key: "messages", label: "留言条数", type: "range" },
   { key: "averageChars", label: "平均字数", type: "range" },
   { key: "reviewStatus", label: "人工审核状态", type: "select" },
+  { key: "commentTime", label: "点评时间", type: "date" },
   { key: "reviewTime", label: "人工审核时间", type: "date" },
 ];
 
@@ -121,10 +128,25 @@ function ReviewDateRange({ fieldKey, form, setForm }: { fieldKey: string; form: 
 }
 
 function statusClass(value: string) {
-  if (["异常", "无效", "否", "过短", "过长"].includes(value)) return "review-tag danger";
+  if (["异常", "无效", "否", "过短", "过慢", "过长"].includes(value)) return "review-tag danger";
   if (["正常", "有效", "是"].includes(value)) return "review-tag success";
   if (value === "待定") return "review-link-value";
   return "review-tag";
+}
+
+function anomalyIdForRow(row: ReviewRow) {
+  const defaultNpsScore = row.nps === "是" ? 9 : row.nps === "否" ? 5 : 8;
+  const defaultNssScore = row.nss === "是" ? 9 : row.nss === "否" ? 5 : 8;
+  return resolveAnomalyId({
+    deviceRisk: row.deviceRisk === "异常" ? "异常" : "正常",
+    npsQualified: row.nps === "否" ? "否" : "是",
+    npsScore: row.npsScore ?? defaultNpsScore,
+    salesNssScore: row.salesNssScore ?? defaultNssScore,
+    serviceNssScore: row.serviceNssScore ?? defaultNssScore,
+    productNssScore: row.productNssScore ?? defaultNssScore,
+    durationJudgement: row.duration === "过慢" ? "过慢" : "正常",
+    reviewStatus: row.reviewStatus === "无效" ? "无效" : "有效",
+  });
 }
 
 export default function ManualReview({ onNotice }: { onNotice: (message: string) => void }) {
@@ -139,16 +161,30 @@ export default function ManualReview({ onNotice }: { onNotice: (message: string)
   const fields = tab === "pending" ? pendingFields : reviewedFields;
   const sourceRows = tab === "pending" ? pendingRows : reviewedRows;
   const visibleRows = useMemo(() => sourceRows.filter((row) => {
-    return Object.entries(applied).every(([key, value]) => {
+    const valuesMatch = Object.entries(applied).every(([key, value]) => {
       if (!value || value === "全部" || key.endsWith("Start") || key.endsWith("End") || key.endsWith("Min") || key.endsWith("Max")) return true;
       if (key === "mis") return value.split(",").includes(String(row.mis ?? ""));
+      if (key === "anomalyId") {
+        const rowValue = anomalyIdForRow(row);
+        return value.split(",").some((option) => option === "空值（未检出异常）" ? rowValue === "" : rowValue === option);
+      }
       return String(row[key as keyof ReviewRow] ?? "").toLowerCase().includes(value.toLowerCase());
-    }) && ["durationMinutes", "messages", "averageChars"].every((key) => {
+    });
+    const numberRangesMatch = ["durationMinutes", "messages", "averageChars"].every((key) => {
       const value = Number(row[key as keyof ReviewRow]);
       const min = applied[`${key}Min`] ? Number(applied[`${key}Min`]) : null;
       const max = applied[`${key}Max`] ? Number(applied[`${key}Max`]) : null;
       return (min === null || value >= min) && (max === null || value <= max);
     });
+    const dateRangesMatch = ["commentTime", "reviewTime"].every((key) => {
+      const start = applied[`${key}Start`];
+      const end = applied[`${key}End`];
+      if (!start && !end) return true;
+      const rowDate = String(row[key as keyof ReviewRow] ?? "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(rowDate)) return false;
+      return (!start || rowDate >= start) && (!end || rowDate <= end);
+    });
+    return valuesMatch && numberRangesMatch && dateRangesMatch;
   }), [applied, sourceRows]);
 
   const changeTab = (next: ReviewTab) => {
@@ -169,9 +205,9 @@ export default function ManualReview({ onNotice }: { onNotice: (message: string)
   };
 
   const exportCsv = () => {
-    const headers = tab === "pending" ? ["品牌", "调查审批单号", "调查方案审批名称", "推送ID", "点评状态", "点评时间", "VIN码", "MIS", "门店", "省份", "城市", "大区", "小区", "设备ID（脱敏）", "答题时长(分)", "时长下限(分)", "时长分位", "基线状态", "NPS符合", "NSS符合", "时长判断", "留言条数", "平均字数", "设备风险", "系统初判"] : ["品牌", "调查审批单号", "调查数据审核流名称", "推送ID", "点评状态", "点评时间", "VIN码", "MIS", "门店", "省份", "城市", "大区", "小区", "设备ID（脱敏）", "答题时长(分)", "时长下限(分)", "时长分位", "基线状态", "人工审核时间", "人工审核状态", "人工审核账户ID", "人工审核账户名称", "无效备注", "NPS符合", "NSS符合", "时长判断", "留言条数", "平均字数", "设备风险", "系统初判"];
-    const keys: (keyof ReviewRow)[] = tab === "pending" ? ["brand", "approvalNo", "flowName", "pushId", "commentStatus", "commentTime", "vin", "mis", "dealer", "province", "city", "region", "district", "deviceId", "durationMinutes", "durationLower", "durationQuantile", "baselineStatus", "nps", "nss", "duration", "messages", "averageChars", "deviceRisk", "initialResult"] : ["brand", "approvalNo", "flowName", "pushId", "commentStatus", "commentTime", "vin", "mis", "dealer", "province", "city", "region", "district", "deviceId", "durationMinutes", "durationLower", "durationQuantile", "baselineStatus", "reviewTime", "reviewStatus", "reviewUserId", "reviewUserName", "invalidReason", "nps", "nss", "duration", "messages", "averageChars", "deviceRisk", "initialResult"];
-    const csv = [headers, ...visibleRows.map((row) => keys.map((key) => String(row[key] ?? "")))].map((line) => line.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\n");
+    const headers = tab === "pending" ? ["品牌", "调查审批单号", "调查方案审批名称", "推送ID", "点评状态", "点评时间", "VIN码", "MIS", "门店", "省份", "城市", "大区", "小区", "设备ID（脱敏）", "答题时长(分)", "时长下限(分)", "时长分位", "基线状态", "NPS符合", "NSS符合", "时长判断", "留言条数", "平均字数", "设备风险", "系统初判"] : ["品牌", "调查审批单号", "调查数据审核流名称", "推送ID", "点评状态", "点评时间", "VIN码", "MIS", "ID", "门店", "省份", "城市", "大区", "小区", "设备ID（脱敏）", "答题时长(分)", "时长下限(分)", "时长分位", "基线状态", "人工审核时间", "人工审核状态", "人工审核账户ID", "人工审核账户名称", "无效备注", "NPS符合", "NSS符合", "时长判断", "留言条数", "平均字数", "设备风险", "系统初判"];
+    const keys: (keyof ReviewRow | "anomalyId")[] = tab === "pending" ? ["brand", "approvalNo", "flowName", "pushId", "commentStatus", "commentTime", "vin", "mis", "dealer", "province", "city", "region", "district", "deviceId", "durationMinutes", "durationLower", "durationQuantile", "baselineStatus", "nps", "nss", "duration", "messages", "averageChars", "deviceRisk", "initialResult"] : ["brand", "approvalNo", "flowName", "pushId", "commentStatus", "commentTime", "vin", "mis", "anomalyId", "dealer", "province", "city", "region", "district", "deviceId", "durationMinutes", "durationLower", "durationQuantile", "baselineStatus", "reviewTime", "reviewStatus", "reviewUserId", "reviewUserName", "invalidReason", "nps", "nss", "duration", "messages", "averageChars", "deviceRisk", "initialResult"];
+    const csv = [headers, ...visibleRows.map((row) => keys.map((key) => key === "anomalyId" ? anomalyIdForRow(row) : String(row[key] ?? "")))].map((line) => line.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
     link.download = `${tab === "pending" ? "人工审核点评有效性" : "已审核记录"}.csv`;
@@ -184,6 +220,8 @@ export default function ManualReview({ onNotice }: { onNotice: (message: string)
     <span>{field.label}：</span>
     {field.key === "mis" ? (
       <SearchableMultiSelect label="MIS" options={selectOptions.mis.filter((option) => option !== "全部")} value={form.mis ?? ""} onChange={(value) => setForm({ ...form, mis: value })} placeholder="请输入或选择MIS，可多选" />
+    ) : field.key === "anomalyId" ? (
+      <SearchableMultiSelect label="ID" options={anomalyFilterOptions} value={form.anomalyId ?? ""} onChange={(value) => setForm({ ...form, anomalyId: value })} placeholder="请输入或选择ID，可多选" />
     ) : field.type === "select" ? (
       <select value={form[field.key] ?? "全部"} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })}>{(selectOptions[field.key] ?? ["全部"]).map((option) => <option key={option}>{option}</option>)}</select>
     ) : field.type === "range" ? (
@@ -205,13 +243,13 @@ export default function ManualReview({ onNotice }: { onNotice: (message: string)
         <th><input type="checkbox" aria-label="全选" checked={visibleRows.length > 0 && selected.length === visibleRows.length} onChange={(event) => setSelected(event.target.checked ? visibleRows.map((row) => row.id) : [])} /></th>
         <th>品牌</th><th>调查审批单号</th><th>调查方案审批名称</th><th>推送ID</th><th>点评状态</th><th>点评时间</th><th>VIN码</th><th>MIS</th><th>门店</th><th>省份</th><th>城市</th><th>大区</th><th>小区</th><th>设备ID（脱敏）</th><th>答题时长(分)</th><th>时长下限(分)</th><th>时长分位</th><th>基线状态</th><th>NPS符合</th><th>NSS符合</th><th>时长判断</th><th>留言条数</th><th>平均字数</th><th>设备风险</th><th>系统初判</th><th>操作</th>
       </> : <>
-        <th>品牌</th><th>调查审批单号</th><th>调查数据审核流名称</th><th>推送ID</th><th>点评状态</th><th>点评时间</th><th>VIN码</th><th>MIS</th><th>门店</th><th>省份</th><th>城市</th><th>大区</th><th>小区</th><th>设备ID（脱敏）</th><th>答题时长(分)</th><th>时长下限(分)</th><th>时长分位</th><th>基线状态</th><th>人工审核时间</th><th>人工审核状态</th><th>人工审核账户ID</th><th>人工审核账户名称</th><th>无效备注</th><th>NPS符合</th><th>NSS符合</th><th>时长判断</th><th>留言条数</th><th>平均字数</th><th>设备风险</th><th>系统初判</th>
+        <th>品牌</th><th>调查审批单号</th><th>调查数据审核流名称</th><th>推送ID</th><th>点评状态</th><th>点评时间</th><th>VIN码</th><th>MIS</th><th>ID</th><th>门店</th><th>省份</th><th>城市</th><th>大区</th><th>小区</th><th>设备ID（脱敏）</th><th>答题时长(分)</th><th>时长下限(分)</th><th>时长分位</th><th>基线状态</th><th>人工审核时间</th><th>人工审核状态</th><th>人工审核账户ID</th><th>人工审核账户名称</th><th>无效备注</th><th>NPS符合</th><th>NSS符合</th><th>时长判断</th><th>留言条数</th><th>平均字数</th><th>设备风险</th><th>系统初判</th>
       </>}</tr></thead>
       <tbody>{visibleRows.map((row) => <tr key={row.id}>{tab === "pending" ? <>
         <td><input type="checkbox" aria-label={`选择审批单${row.approvalNo}`} checked={selected.includes(row.id)} onChange={() => setSelected((ids) => ids.includes(row.id) ? ids.filter((id) => id !== row.id) : [...ids, row.id])} /></td>
         <td>{row.brand}</td><td>{row.approvalNo}</td><td title={row.flowName}>{row.flowName}</td><td>{row.pushId}</td><td>{row.commentStatus}</td><td>{row.commentTime ?? "—"}</td><td>{row.vin}</td><td>{row.mis}</td><td className="review-dealer-cell">{row.dealer.split("｜").map((line) => <span key={line}>{line}</span>)}</td><td>{row.province}</td><td>{row.city}</td><td>{row.region}</td><td>{row.district}</td><td>{row.deviceId ?? "—"}</td><td>{row.durationMinutes > 0 ? row.durationMinutes.toFixed(1) : "—"}</td><td>{row.durationLower ?? "—"}</td><td>{row.durationQuantile ?? "—"}</td><td>{row.baselineStatus ?? "—"}</td><td><span className={statusClass(row.nps)}>{row.nps}</span></td><td><span className={statusClass(row.nss)}>{row.nss}</span></td><td><span className={statusClass(row.duration)}>{row.duration}</span></td><td>{row.messages}</td><td>{row.averageChars.toFixed(1)}</td><td><span className={statusClass(row.deviceRisk)}>{row.deviceRisk}</span></td><td><span className={statusClass(row.initialResult)}>{row.initialResult}</span></td><td><div className="review-row-actions"><button type="button" onClick={() => review([row.id], "有效")}>确认有效</button><button type="button" onClick={() => review([row.id], "无效")}>确认无效</button></div></td>
       </> : <>
-        <td>{row.brand}</td><td>{row.approvalNo}</td><td title={row.flowName}>{row.flowName}</td><td>{row.pushId}</td><td>{row.commentStatus}</td><td>{row.commentTime ?? "—"}</td><td>{row.vin}</td><td>{row.mis}</td><td className="review-dealer-cell">{row.dealer.split("｜").map((line) => <span key={line}>{line}</span>)}</td><td>{row.province}</td><td>{row.city}</td><td>{row.region}</td><td>{row.district}</td><td>{row.deviceId ?? "—"}</td><td>{row.durationMinutes > 0 ? row.durationMinutes.toFixed(1) : "—"}</td><td>{row.durationLower ?? "—"}</td><td>{row.durationQuantile ?? "—"}</td><td>{row.baselineStatus ?? "—"}</td><td>{row.reviewTime}</td><td><span className={statusClass(row.reviewStatus ?? "")}>{row.reviewStatus}</span></td><td>{row.reviewUserId ?? "—"}</td><td>{row.reviewUserName ?? "—"}</td><td>{row.invalidReason ?? "—"}</td><td><span className={statusClass(row.nps)}>{row.nps}</span></td><td><span className={statusClass(row.nss)}>{row.nss}</span></td><td><span className={statusClass(row.duration)}>{row.duration}</span></td><td>{row.messages}</td><td>{row.averageChars.toFixed(1)}</td><td><span className={statusClass(row.deviceRisk)}>{row.deviceRisk}</span></td><td><span className={statusClass(row.initialResult)}>{row.initialResult}</span></td>
+        <td>{row.brand}</td><td>{row.approvalNo}</td><td title={row.flowName}>{row.flowName}</td><td>{row.pushId}</td><td>{row.commentStatus}</td><td>{row.commentTime ?? "—"}</td><td>{row.vin}</td><td>{row.mis}</td><td title={anomalyLabels[anomalyIdForRow(row)] ?? "未检出异常"}><span className={anomalyIdForRow(row) ? `anomaly-id anomaly-id-${anomalyIdForRow(row)}` : ""}>{anomalyIdForRow(row) || "—"}</span></td><td className="review-dealer-cell">{row.dealer.split("｜").map((line) => <span key={line}>{line}</span>)}</td><td>{row.province}</td><td>{row.city}</td><td>{row.region}</td><td>{row.district}</td><td>{row.deviceId ?? "—"}</td><td>{row.durationMinutes > 0 ? row.durationMinutes.toFixed(1) : "—"}</td><td>{row.durationLower ?? "—"}</td><td>{row.durationQuantile ?? "—"}</td><td>{row.baselineStatus ?? "—"}</td><td>{row.reviewTime}</td><td><span className={statusClass(row.reviewStatus ?? "")}>{row.reviewStatus}</span></td><td>{row.reviewUserId ?? "—"}</td><td>{row.reviewUserName ?? "—"}</td><td>{row.invalidReason ?? "—"}</td><td><span className={statusClass(row.nps)}>{row.nps}</span></td><td><span className={statusClass(row.nss)}>{row.nss}</span></td><td><span className={statusClass(row.duration)}>{row.duration}</span></td><td>{row.messages}</td><td>{row.averageChars.toFixed(1)}</td><td><span className={statusClass(row.deviceRisk)}>{row.deviceRisk}</span></td><td><span className={statusClass(row.initialResult)}>{row.initialResult}</span></td>
       </>}</tr>)}</tbody>
     </table></div>
     <div className="review-table-foot"><span>共 {visibleRows.length} 条数据</span><div><button disabled>‹</button><button className="active">1</button><button disabled>›</button><select><option>20 条/页</option><option>50 条/页</option></select></div></div>
