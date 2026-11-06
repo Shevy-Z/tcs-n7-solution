@@ -126,6 +126,23 @@ button { cursor: pointer; }
 .multi-options > label:hover { background: #f1f8fc; }
 .multi-options > label input { width: 13px; height: 13px; margin: 0; accent-color: var(--blue); }
 .multi-options > label span { color: #425867; font-size: 10px; text-align: left; }
+.searchable-multi { position: relative; min-width: 0; width: 100%; }
+.searchable-multi-control { position: relative; width: 100%; }
+.searchable-multi-control input { width: 100%; height: 34px; padding: 0 31px 0 11px; color: #3b5060; background: #fbfdfe; border: 1px solid #dbe5eb; border-radius: 5px; outline: 0; font-size: 10px; }
+.searchable-multi-control input::placeholder { color: #b6c0c7; opacity: 1; }
+.searchable-multi.has-selection .searchable-multi-control input::placeholder { color: #3b5060; }
+.searchable-multi-control button { position: absolute; top: 1px; right: 1px; width: 30px; height: 32px; padding: 0; color: #8fa0ab; background: transparent; border: 0; font-size: 11px; transition: transform .16s ease; }
+.searchable-multi.is-open .searchable-multi-control input { background: #fff; border-color: #65baf0; box-shadow: 0 0 0 3px rgba(21,151,238,.09); }
+.searchable-multi.is-open .searchable-multi-control button { transform: rotate(180deg); }
+.searchable-multi-menu { position: absolute; z-index: 42; top: calc(100% + 5px); left: 0; width: 100%; min-width: 150px; overflow: hidden; background: #fff; border: 1px solid #d6e2e9; border-radius: 7px; box-shadow: 0 12px 28px rgba(16,47,67,.16); }
+.searchable-multi-head { min-height: 33px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; color: #91a0aa; border-bottom: 1px solid #edf2f5; font-size: 8px; }
+.searchable-multi-head button { padding: 3px 5px; color: var(--blue-dark); background: transparent; border: 0; font-size: 8px; }
+.searchable-multi-options { max-height: 190px; padding: 5px; overflow: auto; }
+.searchable-multi-options > label { min-height: 28px; padding: 0 7px; display: flex; align-items: center; gap: 7px; border-radius: 4px; cursor: pointer; }
+.searchable-multi-options > label:hover { background: #f1f8fc; }
+.searchable-multi-options > label input { width: 13px; height: 13px; margin: 0; accent-color: var(--blue); }
+.searchable-multi-options > label span { color: #425867; font-size: 10px; text-align: left; }
+.searchable-multi-empty { min-height: 52px; display: grid; place-items: center; color: #a1afb8; font-size: 9px; }
 .filter-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; padding-top: 15px; border-top: 1px dashed #e6ecef; }
 .secondary-btn, .primary-btn { height: 34px; min-width: 72px; padding: 0 17px; border-radius: 5px; font-size: 10px; font-weight: 600; }
 .secondary-btn { color: #627584; background: #fff; border: 1px solid #d3dee5; }
@@ -198,6 +215,8 @@ footer { max-width: 1700px; margin: 17px auto 0; color: #a4b0b8; font-size: 8px;
 .review-field > input::placeholder, .review-range input::placeholder { color: #bac3c9; }
 .review-field > select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #a2afb7 50%), linear-gradient(135deg, #a2afb7 50%, transparent 50%); background-position: calc(100% - 14px) 15px, calc(100% - 10px) 15px; background-size: 4px 4px; background-repeat: no-repeat; }
 .review-field > input:focus, .review-field > select:focus, .review-range input:focus, .review-date:focus-within { border-color: #65baf0; box-shadow: 0 0 0 3px rgba(21,151,238,.08); }
+.review-field .searchable-multi-control input { height: 35px; background: #fff; border-color: #d7e0e5; }
+.review-field .searchable-multi-control button { height: 33px; }
 .review-range { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) auto; align-items: center; gap: 6px; }
 .review-range input { min-width: 0; width: 100%; height: 35px; padding: 0 9px; color: #405563; background: #fff; border: 1px solid #d7e0e5; border-radius: 4px; outline: 0; font-size: 10px; }
 .review-range span, .review-range b { color: #536570; font-size: 10px; font-weight: 500; text-align: center; }

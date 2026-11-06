@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DurationStatistics from "./duration-statistics";
 import ManualReview from "./manual-review";
+import SearchableMultiSelect from "./searchable-multi-select";
 
 type DetailPageKey = "question" | "customer" | "survey";
 type PageKey = DetailPageKey | "duration" | "review";
@@ -484,7 +485,11 @@ export default function Home() {
                           {filter.options?.map((option) => <option key={option}>{option}</option>)}
                         </select>
                       ) : filter.type === "multi" ? (
-                        <MultiSelect label={filter.label} options={filter.options ?? []} value={form[filter.key] ?? ""} onChange={(value) => setForm({ ...form, [filter.key]: value })} />
+                        filter.key === "mis" ? (
+                          <SearchableMultiSelect label={filter.label} options={filter.options ?? []} value={form[filter.key] ?? ""} onChange={(value) => setForm({ ...form, [filter.key]: value })} placeholder="请输入或选择MIS，可多选" />
+                        ) : (
+                          <MultiSelect label={filter.label} options={filter.options ?? []} value={form[filter.key] ?? ""} onChange={(value) => setForm({ ...form, [filter.key]: value })} />
+                        )
                       ) : filter.type === "date-range" ? (
                         <DateRangePicker start={form.commentTimeStart ?? ""} end={form.commentTimeEnd ?? ""} onChange={(start, end) => setForm({ ...form, commentTimeStart: start, commentTimeEnd: end })} />
                       ) : (

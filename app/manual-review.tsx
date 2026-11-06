@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import SearchableMultiSelect from "./searchable-multi-select";
 
 type ReviewTab = "pending" | "reviewed";
 type ReviewRow = {
@@ -140,6 +141,7 @@ export default function ManualReview({ onNotice }: { onNotice: (message: string)
   const visibleRows = useMemo(() => sourceRows.filter((row) => {
     return Object.entries(applied).every(([key, value]) => {
       if (!value || value === "全部" || key.endsWith("Start") || key.endsWith("End") || key.endsWith("Min") || key.endsWith("Max")) return true;
+      if (key === "mis") return value.split(",").includes(String(row.mis ?? ""));
       return String(row[key as keyof ReviewRow] ?? "").toLowerCase().includes(value.toLowerCase());
     }) && ["durationMinutes", "messages", "averageChars"].every((key) => {
       const value = Number(row[key as keyof ReviewRow]);
@@ -178,7 +180,20 @@ export default function ManualReview({ onNotice }: { onNotice: (message: string)
     onNotice("审核明细已导出");
   };
 
-  const renderField = (field: FieldDef) => <label className={`review-field review-field-${field.type ?? "text"}`} key={field.key}><span>{field.label}：</span>{field.type === "select" ? <select value={form[field.key] ?? "全部"} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })}>{(selectOptions[field.key] ?? ["全部"]).map((option) => <option key={option}>{option}</option>)}</select> : field.type === "range" ? <RangeInput field={field} form={form} setForm={setForm} /> : field.type === "date" ? <ReviewDateRange fieldKey={field.key} form={form} setForm={setForm} /> : <input value={form[field.key] ?? ""} placeholder={field.placeholder} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })} />}</label>;
+  const renderField = (field: FieldDef) => <label className={`review-field review-field-${field.type ?? "text"}`} key={field.key}>
+    <span>{field.label}：</span>
+    {field.key === "mis" ? (
+      <SearchableMultiSelect label="MIS" options={selectOptions.mis.filter((option) => option !== "全部")} value={form.mis ?? ""} onChange={(value) => setForm({ ...form, mis: value })} placeholder="请输入或选择MIS，可多选" />
+    ) : field.type === "select" ? (
+      <select value={form[field.key] ?? "全部"} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })}>{(selectOptions[field.key] ?? ["全部"]).map((option) => <option key={option}>{option}</option>)}</select>
+    ) : field.type === "range" ? (
+      <RangeInput field={field} form={form} setForm={setForm} />
+    ) : field.type === "date" ? (
+      <ReviewDateRange fieldKey={field.key} form={form} setForm={setForm} />
+    ) : (
+      <input value={form[field.key] ?? ""} placeholder={field.placeholder} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })} />
+    )}
+  </label>;
 
   return <section className="manual-review-card">
     <div className="review-tabs" role="tablist"><button className={tab === "pending" ? "active" : ""} type="button" onClick={() => changeTab("pending")}>人工审核点评有效性</button><button className={tab === "reviewed" ? "active" : ""} type="button" onClick={() => changeTab("reviewed")}>已审核记录</button></div>
