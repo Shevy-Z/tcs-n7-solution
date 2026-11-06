@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import DurationStatistics from "./duration-statistics";
+import ManualReview from "./manual-review";
 
 type DetailPageKey = "question" | "customer" | "survey";
-type PageKey = DetailPageKey | "duration";
+type PageKey = DetailPageKey | "duration" | "review";
 type Row = Record<string, string | number>;
 type Column = { key: string; label: string; sublabel?: string; width?: number; group?: "base" | "region" | "detail" };
 
@@ -30,6 +31,7 @@ const pageInfo: Record<PageKey, { label: string; hint: string }> = {
   customer: { label: "客户表明细", hint: "客户评分指标明细" },
   survey: { label: "问卷报表明细", hint: "问卷发放与多层级评分明细" },
   duration: { label: "答题时长统计", hint: "答题及答卷时长多维分析" },
+  review: { label: "人工审核点评", hint: "调查数据有效性人工审核" },
 };
 
 const filters: Filter[] = [
@@ -359,7 +361,7 @@ export default function Home() {
     };
   }, []);
 
-  const detailPage: DetailPageKey = activePage === "duration" ? "question" : activePage;
+  const detailPage: DetailPageKey = activePage === "duration" || activePage === "review" ? "question" : activePage;
   const allRows = useMemo(() => buildRows(detailPage), [detailPage]);
   const columns = columnsByPage[detailPage];
   const visibleFilters = activePage === "survey" ? filters.filter((filter) => filter.key !== "anomalyId") : filters;
@@ -428,7 +430,10 @@ export default function Home() {
         <nav className="main-nav" aria-label="系统菜单">
           <div className="nav-parent"><SideIcon>♙</SideIcon><span>权限管理</span><i>⌄</i></div>
           <div className="nav-parent"><SideIcon>▣</SideIcon><span>问卷管理</span><i>⌄</i></div>
-          <div className="nav-parent"><SideIcon>⌁</SideIcon><span>审批管理</span><i>⌄</i></div>
+          <div className={`nav-parent ${activePage === "review" ? "open" : ""}`}><SideIcon>⌁</SideIcon><span>审批管理</span><i>{activePage === "review" ? "⌃" : "⌄"}</i></div>
+          <div className="subnav approval-subnav">
+            <button className={activePage === "review" ? "active" : ""} type="button" onClick={() => switchPage("review")}><span>人工审核点评</span></button>
+          </div>
           <div className="nav-parent"><SideIcon>▤</SideIcon><span>素材管理</span><i>⌄</i></div>
           <div className="nav-parent open"><SideIcon>◔</SideIcon><span>统计报表</span><i>⌃</i></div>
           <div className="subnav">
@@ -462,7 +467,7 @@ export default function Home() {
             <div className="data-summary"><small>当前数据集</small><b>2026 客户体验调研</b><span>更新于 10:42</span></div>
           </section>
 
-          {activePage === "duration" ? <DurationStatistics onNotice={setNotice} /> : <>
+          {activePage === "review" ? <ManualReview onNotice={setNotice} /> : activePage === "duration" ? <DurationStatistics onNotice={setNotice} /> : <>
           <section className={`filter-card ${filtersOpen ? "" : "filter-card--closed"}`}>
             <div className="filter-head">
               <div><span className="section-kicker">FILTER</span><h2>筛选条件</h2><em>{visibleFilters.length} 项</em></div>
