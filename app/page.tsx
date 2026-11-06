@@ -23,9 +23,46 @@ const seriesCodeOptions = ["AC0", "AE0", "CE0", "L34"];
 const anomalyLabels: Record<string, string> = {
   C: "代答（ID识别异常）",
   R: "结果异常（NPS/NSS异常）",
-  T: "时间异常（时间过短）",
+  T: "时间异常（时长判断过慢）",
   H: "人工审核结果异常",
 };
+
+type AuditSignals = {
+  deviceRisk: "正常" | "异常";
+  npsQualified: "是" | "否";
+  npsScore: number;
+  salesNssScore: number;
+  serviceNssScore: number;
+  productNssScore: number;
+  durationJudgement: "正常" | "过快" | "过慢";
+  reviewStatus: "有效" | "无效";
+};
+
+function resolveAnomalyId(signals: AuditSignals) {
+  if (signals.deviceRisk === "异常") return "C";
+
+  const npsIsHigh = signals.npsScore === 9 || signals.npsScore === 10;
+  const npsIsLow = signals.npsScore >= 1 && signals.npsScore <= 6;
+  const productNssIsLow = signals.productNssScore >= 1 && signals.productNssScore <= 6;
+  const allNssAreHigh = [signals.salesNssScore, signals.serviceNssScore, signals.productNssScore].every((score) => score === 9 || score === 10);
+  const resultIsAbnormal = (signals.npsQualified === "是" && npsIsHigh && productNssIsLow)
+    || (signals.npsQualified === "否" && npsIsLow && allNssAreHigh);
+  if (resultIsAbnormal) return "R";
+
+  if (signals.durationJudgement === "过慢") return "T";
+  if (signals.reviewStatus === "无效") return "H";
+  return "";
+}
+
+function auditSignalsForRow(index: number): AuditSignals {
+  const scenario = index % 5;
+  if (scenario === 0) return { deviceRisk: "异常", npsQualified: "是", npsScore: 10, salesNssScore: 9, serviceNssScore: 9, productNssScore: 9, durationJudgement: "正常", reviewStatus: "有效" };
+  if (scenario === 1 && Math.floor(index / 5) % 2 === 0) return { deviceRisk: "正常", npsQualified: "是", npsScore: 9, salesNssScore: 9, serviceNssScore: 9, productNssScore: 5, durationJudgement: "正常", reviewStatus: "有效" };
+  if (scenario === 1) return { deviceRisk: "正常", npsQualified: "否", npsScore: 5, salesNssScore: 9, serviceNssScore: 10, productNssScore: 9, durationJudgement: "正常", reviewStatus: "有效" };
+  if (scenario === 2) return { deviceRisk: "正常", npsQualified: "是", npsScore: 8, salesNssScore: 8, serviceNssScore: 8, productNssScore: 8, durationJudgement: "过慢", reviewStatus: "有效" };
+  if (scenario === 3) return { deviceRisk: "正常", npsQualified: "是", npsScore: 9, salesNssScore: 9, serviceNssScore: 9, productNssScore: 9, durationJudgement: "正常", reviewStatus: "无效" };
+  return { deviceRisk: "正常", npsQualified: "是", npsScore: 9, salesNssScore: 9, serviceNssScore: 9, productNssScore: 9, durationJudgement: "正常", reviewStatus: "有效" };
+}
 
 const pageInfo: Record<PageKey, { label: string; hint: string }> = {
   question: { label: "其它问题表明细", hint: "多层级问题与答案明细" },
@@ -260,6 +297,7 @@ const vins = ["LGBM9AE99M1240983", "LGBM9AE99M1240837", "LGBM9AE99M1240608", "LG
 function buildRows(page: DetailPageKey): Row[] {
   return Array.from({ length: 13 }, (_, index) => {
     const group = index % 4;
+    const auditSignals = auditSignalsForRow(index);
     const base: Row = {
       no: index + 1,
       planId: index < 8 ? "118" : "126",
@@ -277,7 +315,8 @@ function buildRows(page: DetailPageKey): Row[] {
       province: group < 2 ? "上海市" : group === 2 ? "江苏省" : "浙江省",
       city: cities[group],
       dealer: dealers[group],
-      anomalyId: ["C", "R", "T", "H", ""][index % 5],
+      ...auditSignals,
+      anomalyId: resolveAnomalyId(auditSignals),
       q1: index % 2 ? "【必填】车辆整体评分为何？" : "【必填】车辆整体满意度如何？",
       a1: index % 4 === 0 ? "4 - 满意" : "5 - 非常满意",
       q2: index % 3 === 0 ? "最满意的车辆表现是？" : "—",
