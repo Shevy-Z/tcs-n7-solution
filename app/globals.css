@@ -188,6 +188,7 @@ thead th:first-child { z-index: 5; background: #f7fafb; } tbody tr:nth-child(odd
 .anomaly-id-R { color: #b23d4b; background: #ffebee; }
 .anomaly-id-T { color: #86651f; background: #fff5d9; }
 .anomaly-id-H { color: #6e4ca1; background: #f2eaff; }
+.anomaly-id-Y { color: #237a54; background: #e8f7ef; }
 .empty-state { height: 210px; color: #9aa8b1; }
 .empty-state b, .empty-state span { display: block; } .empty-state b { margin-bottom: 7px; color: #5c707e; font-size: 12px; }
 .table-foot { height: 52px; padding: 0 16px 0 21px; display: flex; align-items: center; justify-content: space-between; color: #91a0aa; background: #fcfdfd; font-size: 9px; }

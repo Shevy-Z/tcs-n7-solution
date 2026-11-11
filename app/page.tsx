@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import DurationStatistics from "./duration-statistics";
 import ManualReview from "./manual-review";
 import SearchableMultiSelect from "./searchable-multi-select";
-import { anomalyFilterOptions, anomalyLabels, type AuditSignals, resolveAnomalyId } from "./anomaly-id";
+import { anomalyFilterOptions, anomalyLabels, maskVin, type AuditSignals, resolveAnomalyId } from "./anomaly-id";
 
 type DetailPageKey = "question" | "customer" | "survey";
 type PageKey = DetailPageKey | "duration" | "review";
@@ -379,7 +379,7 @@ export default function Home() {
         if (key === "mis" || key === "seriesCode" || key === "baselineSeriesCode") return value.split(",").includes(String(row[key] ?? ""));
         if (key === "anomalyId") {
           const rowValue = String(row.anomalyId ?? "");
-          return value.split(",").some((option) => option === "空值" ? rowValue === "" : rowValue === option);
+          return value.split(",").includes(rowValue);
         }
         return String(row[key] ?? "").toLowerCase().includes(value.toLowerCase());
       });
@@ -414,7 +414,7 @@ export default function Home() {
   const exportCsv = () => {
     const csv = [
       columns.map((column) => column.sublabel ? `${column.label}（${column.sublabel}）` : column.label),
-      ...visibleRows.map((row) => columns.map((column) => String(row[column.key] ?? ""))),
+      ...visibleRows.map((row) => columns.map((column) => column.key === "vin" ? maskVin(String(row[column.key] ?? "")) : String(row[column.key] ?? ""))),
     ].map((line) => line.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
@@ -531,9 +531,10 @@ export default function Home() {
                     <tr key={`${activePage}-${row.no}`}>
                       {columns.map((column) => {
                         const value = String(row[column.key] ?? "");
-                        const title = column.key === "anomalyId" ? (anomalyLabels[value] ?? "未检出异常") : (value || "—");
+                        const displayValue = column.key === "vin" ? maskVin(value) : value;
+                        const title = column.key === "anomalyId" ? (anomalyLabels[value] ?? "未检出异常") : (displayValue || "—");
                         const className = column.key === "commentStatus" ? `status status-${row.commentStatus}` : column.key === "anomalyId" && value ? `anomaly-id anomaly-id-${value}` : "";
-                        return <td key={column.key} title={title}><span className={className}>{value}</span></td>;
+                        return <td key={column.key} title={title}><span className={className}>{displayValue}</span></td>;
                       })}
                     </tr>
                   )) : (

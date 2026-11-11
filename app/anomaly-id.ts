@@ -3,9 +3,17 @@ export const anomalyLabels: Record<string, string> = {
   R: "结果异常（NPS/NSS异常）",
   T: "时间异常（时长判断过慢）",
   H: "人工审核结果异常",
+  Y: "未检出异常",
 };
 
-export const anomalyFilterOptions = ["C", "R", "T", "H", "空值"] as const;
+export const anomalyFilterOptions = ["C", "R", "T", "H", "Y"] as const;
+
+export function maskVin(value: string) {
+  const vin = value.trim();
+  if (!vin || vin === "—") return vin;
+  if (vin.length <= 8) return `${vin.slice(0, 2)}${"•".repeat(Math.max(vin.length - 4, 1))}${vin.slice(-2)}`;
+  return `${vin.slice(0, 4)}${"•".repeat(vin.length - 8)}${vin.slice(-4)}`;
+}
 
 export type AuditSignals = {
   deviceRisk: "正常" | "异常";
@@ -31,5 +39,5 @@ export function resolveAnomalyId(signals: AuditSignals) {
 
   if (signals.durationJudgement === "过慢") return "T";
   if (signals.reviewStatus === "无效") return "H";
-  return "";
+  return "Y";
 }
