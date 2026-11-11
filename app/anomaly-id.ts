@@ -5,7 +5,7 @@ export const anomalyLabels: Record<string, string> = {
   H: "人工审核结果异常",
 };
 
-export const anomalyFilterOptions = ["C", "R", "T", "H", "空值（未检出异常）"] as const;
+export const anomalyFilterOptions = ["C", "R", "T", "H", "空值"] as const;
 
 export type AuditSignals = {
   deviceRisk: "正常" | "异常";

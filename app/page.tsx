@@ -21,6 +21,7 @@ type Filter = {
 
 const misOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "18", "19", "20", "21", "22", "24", "26", "28", "29", "31", "32", "44", "85", "217", "218", "255"];
 const seriesCodeOptions = ["AC0", "AE0", "CE0", "L34"];
+const baselineSeriesCodeOptions = ["AC0", "AE0", "CE0", "L34"];
 
 function auditSignalsForRow(index: number): AuditSignals {
   const scenario = index % 5;
@@ -49,6 +50,7 @@ const filters: Filter[] = [
   { key: "commentTime", label: "点评时间", type: "date-range" },
   { key: "mis", label: "MIS", type: "multi", options: misOptions },
   { key: "seriesCode", label: "车系编码", type: "multi", options: seriesCodeOptions },
+  { key: "baselineSeriesCode", label: "基准车系编码", type: "multi", options: baselineSeriesCodeOptions },
   { key: "code18", label: "18位码", type: "text", placeholder: "请输入18位码" },
   { key: "vin", label: "VIN", type: "text", placeholder: "请输入VIN" },
   { key: "region", label: "大区", type: "select", options: ["全部", "东区", "南区", "西区", "北区"] },
@@ -176,6 +178,7 @@ const baseColumns: Column[] = [
   { key: "commentTime", label: "点评时间", width: 154, group: "base" },
   { key: "mis", label: "MIS", width: 80, group: "base" },
   { key: "seriesCode", label: "车系编码", width: 100, group: "base" },
+  { key: "baselineSeriesCode", label: "基准车系编码", width: 118, group: "base" },
   { key: "code18", label: "18位码", width: 180, group: "base" },
   { key: "vin", label: "VIN", width: 180, group: "base" },
   { key: "region", label: "大区", width: 82, group: "region" },
@@ -268,6 +271,7 @@ function buildRows(page: DetailPageKey): Row[] {
       commentTime: index % 3 === 2 ? "2026-10-31 15:36:43" : "—",
       mis: ["19", "24", "31", "218"][index % 4],
       seriesCode: seriesCodeOptions[index % seriesCodeOptions.length],
+      baselineSeriesCode: baselineSeriesCodeOptions[(index + 1) % baselineSeriesCodeOptions.length],
       code18: `1N4AL3AP${String(1000000000 + index).slice(-10)}`,
       vin: vins[group],
       region: group < 3 ? "东区" : "南区",
@@ -372,10 +376,10 @@ export default function Home() {
     if (!activeEntries.length && !start && !end) return allRows;
     return allRows.filter((row) => {
       const valuesMatch = activeEntries.every(([key, value]) => {
-        if (key === "mis" || key === "seriesCode") return value.split(",").includes(String(row[key] ?? ""));
+        if (key === "mis" || key === "seriesCode" || key === "baselineSeriesCode") return value.split(",").includes(String(row[key] ?? ""));
         if (key === "anomalyId") {
           const rowValue = String(row.anomalyId ?? "");
-          return value.split(",").some((option) => option === "空值（未检出异常）" ? rowValue === "" : rowValue === option);
+          return value.split(",").some((option) => option === "空值" ? rowValue === "" : rowValue === option);
         }
         return String(row[key] ?? "").toLowerCase().includes(value.toLowerCase());
       });

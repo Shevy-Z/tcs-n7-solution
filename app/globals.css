@@ -236,7 +236,7 @@ footer { max-width: 1700px; margin: 17px auto 0; color: #a4b0b8; font-size: 8px;
 .review-toolbar button[title] { width: 30px; padding: 0; color: #536772; background: transparent; border-color: transparent; font-size: 15px; }
 .review-table-wrap { width: 100%; overflow: auto; border-top: 1px solid #e4eaee; }
 table.review-table { table-layout: fixed; min-width: 1540px; width: 100%; }
-.review-table.review-table-pending { min-width: 3350px; }
+.review-table.review-table-pending { min-width: 3420px; }
 .review-table.review-table-reviewed { min-width: 3890px; }
 .review-table thead th { position: static; min-width: 90px; height: 48px; padding: 0 9px; color: #2e424f; background: #f8fafb; font-size: 9px; }
 .review-table thead th:nth-child(1) { min-width: 58px; width: 58px; }
@@ -257,8 +257,8 @@ table.review-table { table-layout: fixed; min-width: 1540px; width: 100%; }
 .review-table-pending thead th:nth-child(12), .review-table-pending thead th:nth-child(13), .review-table-pending thead th:nth-child(14) { min-width: 105px; width: 105px; }
 .review-table-pending thead th:nth-child(15) { min-width: 160px; width: 160px; }
 .review-table-pending thead th:nth-child(16), .review-table-pending thead th:nth-child(17), .review-table-pending thead th:nth-child(18), .review-table-pending thead th:nth-child(19) { min-width: 105px; width: 105px; }
-.review-table-pending thead th:nth-child(20), .review-table-pending thead th:nth-child(21), .review-table-pending thead th:nth-child(22), .review-table-pending thead th:nth-child(23), .review-table-pending thead th:nth-child(24), .review-table-pending thead th:nth-child(25), .review-table-pending thead th:nth-child(26) { min-width: 100px; width: 100px; }
-.review-table-pending thead th:nth-child(27) { min-width: 150px; width: 150px; }
+.review-table-pending thead th:nth-child(20), .review-table-pending thead th:nth-child(21), .review-table-pending thead th:nth-child(22), .review-table-pending thead th:nth-child(23), .review-table-pending thead th:nth-child(24), .review-table-pending thead th:nth-child(25), .review-table-pending thead th:nth-child(26), .review-table-pending thead th:nth-child(27) { min-width: 100px; width: 100px; }
+.review-table-pending thead th:nth-child(28) { min-width: 150px; width: 150px; }
 .review-table-reviewed thead th:nth-child(1) { min-width: 135px; width: 135px; }
 .review-table-reviewed thead th:nth-child(2) { min-width: 125px; width: 125px; }
 .review-table-reviewed thead th:nth-child(3) { min-width: 215px; width: 215px; }
