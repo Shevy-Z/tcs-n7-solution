@@ -239,7 +239,6 @@ const surveyColumns: Column[] = [
   { key: "province", label: "省", width: 86, group: "region" },
   { key: "city", label: "市", width: 86, group: "region" },
   { key: "dealer", label: "专营店名称", width: 168, group: "region" },
-  ...rewardColumns,
   { key: "levelScore", label: "第一层", sublabel: "评分", width: 145, group: "detail" },
   { key: "level1Item", label: "第一层", sublabel: "Lvl_1项目", width: 190, group: "detail" },
   { key: "level2Item", label: "第二层", sublabel: "Lvl_2项目", width: 190, group: "detail" },
