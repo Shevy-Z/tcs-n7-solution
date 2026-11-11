@@ -200,12 +200,6 @@ const questionColumns: Column[] = [
   { key: "a5", label: "第五层答案", width: 120, group: "detail" },
 ];
 
-const rewardColumns: Column[] = [
-  { key: "rewardSuccess", label: "是否已成功发放点评奖励", width: 180, group: "detail" },
-  { key: "rewardTime", label: "发放点评奖励时间", width: 156, group: "detail" },
-  { key: "rewardFailure", label: "发放奖励失败原因", width: 160, group: "detail" },
-];
-
 const customerScoreColumns: Column[] = [
   { key: "vehicleOverallScore", label: "【必填】车辆整体评分为?", width: 190, group: "detail" },
   { key: "recommendFriends", label: "【必填】您有多大可能推荐您的车型给亲友、同事?", width: 255, group: "detail" },
@@ -230,7 +224,6 @@ const customerColumns: Column[] = [
   { key: "city", label: "市", width: 86, group: "region" },
   { key: "dealer", label: "专营店名称", width: 168, group: "region" },
   { key: "anomalyId", label: "ID", width: 74, group: "detail" },
-  ...rewardColumns,
   ...customerScoreColumns,
 ];
 
