@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DurationStatistics from "./duration-statistics";
 import ManualReview from "./manual-review";
+import SystemSampleValidity from "./system-sample-validity";
 import SearchableMultiSelect from "./searchable-multi-select";
 import { anomalyFilterOptions, anomalyLabels, maskVin, type AuditSignals, resolveAnomalyId } from "./anomaly-id";
 
 type DetailPageKey = "question" | "customer" | "survey";
-type PageKey = DetailPageKey | "duration" | "review";
+type PageKey = DetailPageKey | "duration" | "review" | "sampleValidity";
 type Row = Record<string, string | number>;
 type Column = { key: string; label: string; sublabel?: string; width?: number; group?: "base" | "region" | "detail" };
 
@@ -39,6 +40,7 @@ const pageInfo: Record<PageKey, { label: string; hint: string }> = {
   survey: { label: "问卷报表明细", hint: "问卷发放与多层级评分明细" },
   duration: { label: "答题时长统计", hint: "答题及答卷时长多维分析" },
   review: { label: "人工审核点评", hint: "调查数据有效性人工审核" },
+  sampleValidity: { label: "系统样本有效性", hint: "问卷评分题目有效性配置" },
 };
 
 const filters: Filter[] = [
@@ -365,7 +367,7 @@ export default function Home() {
     };
   }, []);
 
-  const detailPage: DetailPageKey = activePage === "duration" || activePage === "review" ? "question" : activePage;
+  const detailPage: DetailPageKey = activePage === "duration" || activePage === "review" || activePage === "sampleValidity" ? "question" : activePage;
   const allRows = useMemo(() => buildRows(detailPage), [detailPage]);
   const columns = columnsByPage[detailPage];
   const visibleFilters = activePage === "survey" ? filters.filter((filter) => filter.key !== "anomalyId") : filters;
@@ -453,7 +455,8 @@ export default function Home() {
             <button type="button"><span>逻辑树管理</span></button>
             <button type="button"><span>逻辑树关联配置</span></button>
           </div>
-          <div className="nav-parent"><SideIcon>⚿</SideIcon><span>配置管理</span><i>⌄</i></div>
+          <div className={`nav-parent ${activePage === "sampleValidity" ? "open" : ""}`}><SideIcon>⚿</SideIcon><span>配置管理</span><i>{activePage === "sampleValidity" ? "⌃" : "⌄"}</i></div>
+          <div className="subnav"><button className={activePage === "sampleValidity" ? "active" : ""} type="button" onClick={() => switchPage("sampleValidity")}><span>系统样本有效性</span></button></div>
         </nav>
         <div className="sidebar-foot"><span className="status-dot" /> <span>系统运行正常</span></div>
       </aside>
@@ -461,17 +464,17 @@ export default function Home() {
       <div className="workspace">
         <header className="topbar">
           <button className="nav-toggle" type="button" onClick={() => setCollapsed((value) => !value)} aria-label="展开或收起侧栏">☰</button>
-          <div className="crumb"><span>统计报表</span><b>/</b><strong>{pageInfo[activePage].label}</strong></div>
+          <div className="crumb"><span>{activePage === "sampleValidity" ? "配置管理" : activePage === "review" ? "审批管理" : "统计报表"}</span><b>/</b><strong>{pageInfo[activePage].label}</strong></div>
           <div className="account"><span className="account-avatar">A</span><span><b>admin</b><small>超级管理员</small></span><i>⌄</i></div>
         </header>
 
         <main className="content">
           <section className="page-heading">
-            <div><p>STATISTICS / DETAIL</p><h1>{pageInfo[activePage].label}</h1><span>{pageInfo[activePage].hint}</span></div>
+            <div><p>{activePage === "sampleValidity" ? "CONFIGURATION / VALIDITY" : "STATISTICS / DETAIL"}</p><h1>{pageInfo[activePage].label}</h1><span>{pageInfo[activePage].hint}</span></div>
             <div className="data-summary"><small>当前数据集</small><b>2026 客户体验调研</b><span>更新于 10:42</span></div>
           </section>
 
-          {activePage === "review" ? <ManualReview onNotice={setNotice} /> : activePage === "duration" ? <DurationStatistics onNotice={setNotice} /> : <>
+          {activePage === "review" ? <ManualReview onNotice={setNotice} /> : activePage === "duration" ? <DurationStatistics onNotice={setNotice} /> : activePage === "sampleValidity" ? <SystemSampleValidity onNotice={setNotice} /> : <>
           <section className={`filter-card ${filtersOpen ? "" : "filter-card--closed"}`}>
             <div className="filter-head">
               <div><span className="section-kicker">FILTER</span><h2>筛选条件</h2><em>{visibleFilters.length} 项</em></div>
