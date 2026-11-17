@@ -100,7 +100,7 @@ export default function SystemSampleValidity({ onNotice }: { onNotice: (message:
 
   const openConfig = (survey: Survey) => {
     setEditing(survey);
-    setSelections(configured[survey.id]?.selections?.map((item) => ({ primary: item.primary, features: [...item.features] })) ?? defaultSelections.map((item) => ({ ...item, features: [] })));
+    setSelections(configured[survey.id]?.selections?.map((item) => ({ primary: item.primary, features: Array.isArray(item.features) ? item.features.slice(0, 1) : [] })) ?? defaultSelections.map((item) => ({ ...item, features: [] })));
     setQuestionPage(1);
     setQuestionPageSize(10);
     setQuestionJump("");
@@ -114,11 +114,9 @@ export default function SystemSampleValidity({ onNotice }: { onNotice: (message:
     setExpandedQuestion(option === "特性NSS题目" ? index : null);
   };
   const chooseFeature = (index: number, feature: string) => {
-    setSelections((items) => items.map((item, itemIndex) => {
-      if (itemIndex !== index) return item;
-      const features = item.features.includes(feature) ? item.features.filter((value) => value !== feature) : [...item.features, feature];
-      return { primary: "特性NSS题目", features };
-    }));
+    setSelections((items) => items.map((item, itemIndex) => itemIndex === index
+      ? { primary: "特性NSS题目", features: [feature] }
+      : item));
   };
   const saveConfig = () => {
     if (!editing) return;
@@ -160,7 +158,7 @@ export default function SystemSampleValidity({ onNotice }: { onNotice: (message:
 
     {editing && <div className="sample-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditing(null); }}><div className="sample-modal" role="dialog" aria-modal="true" aria-labelledby="sample-modal-title">
       <div className="sample-modal-head"><div><h2 id="sample-modal-title">编辑系统样本有效题目</h2><span>问卷 {editing.id} · {editing.name}</span></div><button type="button" aria-label="关闭配置弹窗" onClick={() => setEditing(null)}>×</button></div>
-      <div className="sample-modal-body" ref={modalBodyRef}><div className="sample-question-table-wrap"><table className="sample-question-table"><thead><tr><th>序号</th><th>题目标题</th><th>操作</th></tr></thead><tbody>{shownQuestions.map(({ title, index }) => <tr key={index}><td>{index + 1}</td><td>{title}</td><td><div className="sample-primary-options">{primaryOptions.map((option) => <label key={option}><input type="checkbox" checked={selections[index]?.primary === option} onChange={() => choosePrimary(index, option)} /><span>{option}</span></label>)}{selections[index]?.primary === "特性NSS题目" && <button type="button" className="sample-feature-toggle" aria-label={`展开${title}的特性NSS二级选项`} aria-expanded={expandedQuestion === index} onClick={() => setExpandedQuestion(expandedQuestion === index ? null : index)}>{selections[index]?.features.length ? `已选 ${selections[index].features.length} 项` : "选择特性细项"}{expandedQuestion === index ? "⌃" : "⌄"}</button>}</div>{selections[index]?.primary === "特性NSS题目" && expandedQuestion === index && <div className="sample-feature-panel"><div className="sample-feature-head"><strong>特性NSS评分项</strong><span>可多选；勾选细项会自动选中“特性NSS题目”</span></div><div className="sample-feature-grid">{featureOptions.map((feature) => <label key={feature}><input type="checkbox" checked={selections[index]?.features.includes(feature) ?? false} onChange={() => chooseFeature(index, feature)} /><span>{feature}</span></label>)}</div></div>}</td></tr>)}</tbody></table><div className="sample-question-note">仅展示当前问卷中的 10 分制评分题目；每道题只能选择一个一级选项。</div></div></div>
+      <div className="sample-modal-body" ref={modalBodyRef}><div className="sample-question-table-wrap"><table className="sample-question-table"><thead><tr><th>序号</th><th>题目标题</th><th>操作</th></tr></thead><tbody>{shownQuestions.map(({ title, index }) => <tr key={index}><td>{index + 1}</td><td>{title}</td><td><div className="sample-primary-options">{primaryOptions.map((option) => <label key={option}><input type="checkbox" checked={selections[index]?.primary === option} onChange={() => choosePrimary(index, option)} /><span>{option}</span></label>)}{selections[index]?.primary === "特性NSS题目" && <button type="button" className="sample-feature-toggle" aria-label={`展开${title}的特性NSS二级选项`} aria-expanded={expandedQuestion === index} onClick={() => setExpandedQuestion(expandedQuestion === index ? null : index)}>{selections[index]?.features[0] ?? "选择特性细项"}{expandedQuestion === index ? "⌃" : "⌄"}</button>}</div>{selections[index]?.primary === "特性NSS题目" && expandedQuestion === index && <div className="sample-feature-panel"><div className="sample-feature-head"><strong>特性NSS评分项</strong><span>单选</span></div><div className="sample-feature-grid">{featureOptions.map((feature) => <label key={feature}><input type="radio" name={`feature-${editing.id}-${index}`} checked={selections[index]?.features[0] === feature} onChange={() => chooseFeature(index, feature)} /><span>{feature}</span></label>)}</div></div>}</td></tr>)}</tbody></table><div className="sample-question-note">仅展示当前问卷中的 10 分制评分题目；每道题只能选择一个一级选项。</div></div></div>
       <div className="sample-modal-foot"><div className="sample-pagination"><span>第 {(questionPage - 1) * questionPageSize + 1}–{Math.min(questionPage * questionPageSize, questionTitles.length)} 条/总共 {questionTitles.length} 条</span><button type="button" disabled={questionPage === 1} onClick={() => changeQuestionPage(questionPage - 1)}>‹</button>{Array.from({ length: questionPages }, (_, index) => <button type="button" key={index} className={questionPage === index + 1 ? "active" : ""} onClick={() => changeQuestionPage(index + 1)}>{index + 1}</button>)}<button type="button" disabled={questionPage === questionPages} onClick={() => changeQuestionPage(questionPage + 1)}>›</button><select aria-label="弹窗每页条数" value={questionPageSize} onChange={(event) => { setQuestionPageSize(Number(event.target.value)); changeQuestionPage(1); }}>{[10, 20, 50].map((size) => <option value={size} key={size}>{size} 条/页</option>)}</select><span>跳至</span><input aria-label="弹窗跳转页码" inputMode="numeric" value={questionJump} onChange={(event) => setQuestionJump(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") jumpTo(questionJump, questionPages, changeQuestionPage); }} /><span>页</span></div><button type="button" className="sample-save" onClick={saveConfig}>确认保存</button></div>
     </div></div>}
   </section>;
