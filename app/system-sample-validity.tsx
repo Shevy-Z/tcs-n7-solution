@@ -9,7 +9,7 @@ type SavedConfig = Record<number, { selections: QuestionSelection[] }>;
 
 const primaryOptions: PrimaryOption[] = ["NPS题目", "产品NSS题目", "特性NSS题目", "销售NSS题目", "售后NSS题目"];
 const featureOptions = [
-  "外观评分", "内饰评分", "车机音响与OTA评分", "辅助驾驶评分", "空调评分", "车内静音评分", "座椅与空间评分",
+  "外观评分", "内饰评分", "车机音响与OTA评分", "辅助驾驶评分", "语音助手评分", "空调评分", "车内静音评分", "座椅与空间评分",
   "储物与充电评分", "控制功能操作评分", "动力系统评分", "操控性能评分", "电池续航或油耗评分", "车主App评分",
 ];
 const firstSurveys: Survey[] = [
