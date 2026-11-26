@@ -43,7 +43,9 @@ const pageInfo: Record<PageKey, { label: string; hint: string }> = {
   sampleValidity: { label: "系统样本有效性", hint: "问卷评分题目有效性配置" },
 };
 
-const menuGroups: { key: string; label: string; icon: string; items: { label: string; page?: PageKey }[] }[] = [
+const logicTreeAssociationUrl = "https://shevy-z.github.io/tcs-n7-solution/tcs-detail-reports/logic-tree-association/pages/association.html?feature=F02&preview=20261012-no-layer";
+
+const menuGroups: { key: string; label: string; icon: string; items: { label: string; page?: PageKey; href?: string }[] }[] = [
   { key: "permissions", label: "权限管理", icon: "♙", items: [{ label: "用户管理" }, { label: "角色管理" }, { label: "菜单管理" }] },
   { key: "questionnaires", label: "问卷管理", icon: "▣", items: [{ label: "问卷列表" }] },
   { key: "approvals", label: "审批管理", icon: "⌁", items: [{ label: "问卷发布审批" }, { label: "人工审核点评", page: "review" }, { label: "调查方案审批" }, { label: "我的审批" }] },
@@ -51,7 +53,7 @@ const menuGroups: { key: string; label: string; icon: string; items: { label: st
   { key: "statistics", label: "统计报表", icon: "◔", items: [
     { label: "车主统计TCS" }, { label: "未点评里推送日志" }, { label: "问题表明细", page: "question" },
     { label: "客户表明细", page: "customer" }, { label: "点评奖励发放日志" }, { label: "答题时长统计", page: "duration" },
-    { label: "逻辑树管理" }, { label: "逻辑树关联配置" }, { label: "问卷报表明细", page: "survey" },
+    { label: "逻辑树管理" }, { label: "逻辑树关联配置", href: logicTreeAssociationUrl }, { label: "问卷报表明细", page: "survey" },
   ] },
   { key: "configuration", label: "配置管理", icon: "⚿", items: [{ label: "系统样本有效性", page: "sampleValidity" }, { label: "积分发放配置" }] },
 ];
@@ -453,7 +455,7 @@ export default function Home() {
               <SideIcon>{group.icon}</SideIcon><span>{group.label}</span><i>{openMenus[group.key] ? "⌃" : "⌄"}</i>
             </button>
             <div className="subnav" id={`nav-${group.key}`} hidden={!openMenus[group.key]}>
-              {group.items.map((item) => <button className={item.page && activePage === item.page ? "active" : ""} key={item.label} type="button" onClick={() => item.page ? switchPage(item.page) : setNotice(`${item.label}页面暂未接入`)}><span>{item.label}</span></button>)}
+              {group.items.map((item) => <button className={item.page && activePage === item.page ? "active" : ""} key={item.label} type="button" onClick={() => item.page ? switchPage(item.page) : item.href ? window.location.assign(item.href) : setNotice(`${item.label}页面暂未接入`)}><span>{item.label}</span></button>)}
             </div>
           </div>)}
         </nav>
