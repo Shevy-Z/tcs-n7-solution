@@ -253,6 +253,17 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
 .btn-sm{height:27px;padding:0 10px}
 .modal-search{width:100%;height:30px;padding:0 10px;margin-bottom:8px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);outline:none}
 .modal-search:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-mid)}
+.modal-selection-summary{margin:-5px 0 12px;padding:8px 10px;border-radius:6px;background:#EFF6FF;color:#1D4ED8;font-size:11px;line-height:1.6}
+.modal-selection-summary:empty{display:none}
+.modal-group-title{padding:8px 12px 5px;background:#F8FAFC;color:#64748B;font-size:11px;font-weight:600;border-bottom:1px solid var(--border)}
+.modal-node-option{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px}
+.modal-node-option:hover{background:var(--surface2)}
+.modal-node-option:has(input:checked){background:var(--blue-light);color:var(--blue)}
+.modal-node-option input{accent-color:var(--blue);width:14px;height:14px;flex:none}
+.modal-node-option .node-label{flex:1}
+.q-node-path{display:inline-flex;flex-wrap:wrap;gap:4px;max-width:100%;white-space:normal}
+.q-next-branches{margin:5px 8px 5px 26px;padding:6px 8px;border-left:2px solid #BFDBFE;color:#607489;font-size:10px;line-height:1.55}
+.q-next-branches strong{display:block;color:#2369a7;font-weight:600}
 @media(max-width:1600px){
   .survey-config-col{width:220px}.cascade-col{width:235px}
   .preview-tree{min-width:1040px;gap:20px}.preview-tree-col{width:190px;flex-basis:190px}
@@ -269,7 +280,7 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
     <nav class="tcs-main-nav" aria-label="系统菜单">
       <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-permissions"><span class="tcs-side-icon" aria-hidden="true">♙</span><span>权限管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-permissions"><button type="button" data-placeholder>用户管理</button><button type="button" data-placeholder>角色管理</button><button type="button" data-placeholder>菜单管理</button></div></div>
       <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-questionnaires"><span class="tcs-side-icon" aria-hidden="true">▣</span><span>问卷管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-questionnaires"><button type="button" data-placeholder>问卷列表</button></div></div>
-      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-approvals"><span class="tcs-side-icon" aria-hidden="true">⌁</span><span>审批管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-approvals"><button type="button" data-placeholder>问卷发布审批</button><a href="../../index.html?view=review">人工审核点评</a><button type="button" data-placeholder>调查方案审批</button><button type="button" data-placeholder>我的审批</button></div></div>
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-approvals"><span class="tcs-side-icon" aria-hidden="true">⌁</span><span>审批管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-approvals"><button type="button" data-placeholder>问卷发布审批</button><a href="../../index.html?view=review">人工审核点评</a><a href="../../plan-approval/index.html#plan">调查方案审批</a><button type="button" data-placeholder>我的审批</button></div></div>
       <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-assets"><span class="tcs-side-icon" aria-hidden="true">▤</span><span>素材管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-assets"><button type="button" data-placeholder>链接库</button><button type="button" data-placeholder>图标库</button></div></div>
       <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-statistics"><span class="tcs-side-icon" aria-hidden="true">◔</span><span>统计报表</span><i>⌃</i></button><div class="tcs-subnav" id="nav-statistics"><button type="button" data-placeholder>车主统计TCS</button><button type="button" data-placeholder>未点评里推送日志</button><a href="../../index.html?view=question">问题表明细</a><a href="../../index.html?view=customer">客户表明细</a><button type="button" data-placeholder>点评奖励发放日志</button><a href="../../index.html?view=duration">答题时长统计</a><button type="button" data-placeholder>逻辑树管理</button><a class="active" aria-current="page" href="./association.html?feature=F02&amp;preview=20261012-no-layer">逻辑树关联配置</a><a href="../../index.html?view=survey">问卷报表明细</a></div></div>
       <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-configuration"><span class="tcs-side-icon" aria-hidden="true">⚿</span><span>配置管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-configuration"><a href="../../index.html?view=sampleValidity">系统样本有效性</a><button type="button" data-placeholder>积分发放配置</button></div></div>
@@ -343,7 +354,8 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
     <div class="modal-sub" id="modal-sub"></div>
     <div class="assoc-scope-note">本页仅关联现有节点，支持普通节点和系统保留节点。</div>
     <input id="modal-search" class="modal-search" placeholder="搜索节点…" oninput="renderModalList()"/>
-    <div class="modal-list" id="modal-list"></div>
+    <div class="modal-list" id="modal-list" role="group" aria-label="可选择的维度节点，可多选"></div>
+    <div class="modal-selection-summary" id="modal-selection-summary" aria-live="polite"></div>
     <div class="reserved-panel">
       <div class="reserved-title" data-anno="assoc-reserved-nodes">系统保留节点</div>
       <label><input type="radio" name="reserved-node-choice" value="困扰度" onchange="toggleReserved(this)">困扰度</label>
@@ -585,7 +597,7 @@ const TREES=[
   ]},
 ];
 
-// 映射：questionId → nodeId
+// 映射：questionId → nodeId[]。兼容页面初始演示数据中的单个 nodeId。
 let mappings={};
 // 题目自定义树层级标签：questionId → treeDepth (0-4)
 let questionLevels={};
@@ -599,7 +611,7 @@ let selectedSurveys=[];
 let activeSurveyId=null;
 // 模态状态
 let modalPending=null; // {qId, lv}
-let modalPickedNodeId=null;
+let modalPickedNodeIds=new Set();
 let reservedMappings={}; // 题目选择的系统保留节点；与普通节点互斥
 let pendingReserved=new Set();
 let treeStates={};
@@ -634,6 +646,7 @@ let lastTreeId=null;
 function getTree(){return TREES.find(t=>t.id===currentTreeId);}
 function findNode(nodes,id){for(const n of nodes){if(n.id===id)return n;const f=findNode(n.children||[],id);if(f)return f;}return null;}
 function flatNodes(nodes,arr=[]){nodes.forEach(n=>{arr.push(n);flatNodes(n.children||[],arr);});return arr;}
+function getMappedNodeIds(qId){const value=mappings[qId];return Array.isArray(value)?value.filter(Boolean):(value?[value]:[]);}
 function getActiveSurvey(){return selectedSurveys.find(s=>s.id===activeSurveyId)||selectedSurveys[0]||null;}
 
 function recomputeActiveLayers(){
@@ -663,7 +676,7 @@ function getSurveyProgress(id){
   let selected=0,mapped=0;
   ids.forEach(qid=>{
     if(layerSelected.some(set=>set.has(qid)))selected++;
-    if(mappings[qid]||(reservedMappings[qid]&&reservedMappings[qid].size))mapped++;
+    if(getMappedNodeIds(qid).length||(reservedMappings[qid]&&reservedMappings[qid].size))mapped++;
   });
   return {total:ids.size,selected,mapped};
 }
@@ -756,10 +769,33 @@ function getAllowedNodesForModal(){
   const t=getTree();
   if(!t||!modalPending) return {nodes:[],blocked:false,reason:''};
   const targetDepth=modalPending.lv;
-  const nodesAtDepth=flatNodes(t.nodes).filter(n=>n.depth===targetDepth);
-  if(!nodesAtDepth.length) return {nodes:[],blocked:true,
-    reason:`逻辑树第${['一','二','三','四','五'][targetDepth]}层暂无节点，请先在树管理页添加`};
-  return {nodes:nodesAtDepth,blocked:false,reason:''};
+  if(targetDepth===0){
+    const nodes=t.nodes.filter(n=>n.depth===0);
+    return {nodes,groups:[{label:'第一层维度',nodes}],blocked:!nodes.length,reason:'当前逻辑树暂无第一层维度节点'};
+  }
+  const parentIds=getMappedNodeIds(modalPending.srcId);
+  const groups=parentIds.map(id=>{
+    const parent=findNode(t.nodes,id);
+    return parent?{label:getNodePathLabel(id),nodes:(parent.children||[]).filter(n=>n.depth===targetDepth)}:null;
+  }).filter(Boolean);
+  const nodes=[...new Map(groups.flatMap(group=>group.nodes).map(node=>[node.id,node])).values()];
+  return {nodes,groups,blocked:!nodes.length,
+    reason:parentIds.length?'已选上层维度没有可关联的下一层节点':'请先为上一层题目配置维度节点'};
+}
+
+function pruneChildMappings(qId,lv,sid){
+  if(lv>=4)return;
+  const tree=SURVEY_TREE[sid];if(!tree)return;
+  const children=(tree[['L1','L2','L3','L4','L5'][lv+1]]||{})[qId]||[];
+  const allowed=new Set(getMappedNodeIds(qId).flatMap(id=>{
+    const parent=getTree()&&findNode(getTree().nodes,id);
+    return parent?(parent.children||[]).map(child=>child.id):[];
+  }));
+  children.forEach(child=>{
+    const kept=getMappedNodeIds(child.id).filter(id=>allowed.has(id));
+    if(kept.length)mappings[child.id]=kept;else delete mappings[child.id];
+    pruneChildMappings(child.id,lv+1,sid);
+  });
 }
 
 function clearChildMappings(qId,lv,sid){
@@ -793,7 +829,7 @@ function clearChildSelections(qId,lv,sid){
 function onTreeChange(){
   if(lastTreeId){
     treeStates[lastTreeId]={
-      mappings:{...mappings},
+      mappings:Object.fromEntries(Object.entries(mappings).map(([id])=>[id,[...getMappedNodeIds(id)]])),
       reservedMappings:Object.fromEntries(Object.entries(reservedMappings).map(([k,v])=>[k,[...v]])),
       layerSelected:layerSelected.map(set=>[...set])
     };
@@ -801,7 +837,7 @@ function onTreeChange(){
   currentTreeId=document.getElementById('tree-select').value||null;
   const state=treeStates[currentTreeId];
   if(state){
-    mappings={...state.mappings};
+    mappings=Object.fromEntries(Object.entries(state.mappings).map(([id,value])=>[id,Array.isArray(value)?[...value]:[value]]));
     reservedMappings=Object.fromEntries(Object.entries(state.reservedMappings||{}).map(([k,v])=>[k,new Set(v)]));
     layerSelected=(state.layerSelected||[]).map(items=>new Set(items));
   }else if(lastTreeId){
@@ -963,7 +999,7 @@ function renderCascade(){
     const items=getQuestionsForLayer(lv);
     const questionIds=new Set(items.map(q=>q.id));
     const totalCnt=questionIds.size;
-    const configuredCnt=[...questionIds].filter(id=>mappings[id]||(reservedMappings[id]&&reservedMappings[id].size)).length;
+    const configuredCnt=[...questionIds].filter(id=>getMappedNodeIds(id).length||(reservedMappings[id]&&reservedMappings[id].size)).length;
 
     // 列头
     const hdr=document.createElement('div');
@@ -993,8 +1029,7 @@ function renderCascade(){
     } else {
       function appendQuestion(q){
         const isSelected=layerSelected[lv].has(q.id);
-        const nodeId=mappings[q.id];
-        const node=nodeId&&getTree()?findNode(getTree().nodes,nodeId):null;
+        const nodes=getMappedNodeIds(q.id).map(id=>getTree()&&findNode(getTree().nodes,id)).filter(Boolean);
         const reserved=[...(reservedMappings[q.id]||[])];
         const parentQ=lv>0&&q.srcId?findQuestionInSurvey(q.sid,q.srcId):null;
         const triggerText=lv>0?getTriggerText(q,lv):'';
@@ -1012,11 +1047,12 @@ function renderCascade(){
           </div>
           <div class="q-dim">
             <span class="q-dim-arrow">↳</span>
-            ${node||reserved.length
-              ? `<span class="q-node-path">${node?`已选择-L${lv+1}-${node.label}`:`已选择-${reserved[0]}`}</span><button class="q-reselect" onclick="openModal('${q.id}',${lv},event)">重新选择</button>`
+            ${nodes.length||reserved.length
+              ? `<span class="q-node-path">${nodes.length?`已选择 ${nodes.length} 个：${nodes.map(n=>n.label).join('、')}`:`已选择-${reserved[0]}`}</span><button class="q-reselect" onclick="openModal('${q.id}',${lv},event)">重新选择</button>`
               : `<button class="q-dim-btn" onclick="openModal('${q.id}',${lv},event)">配置维度</button>`
             }
           </div>
+          ${lv<4&&nodes.length?`<div class="q-next-branches"><strong>后续层级</strong>${nodes.map(n=>`${n.label} → ${(n.children||[]).length?(n.children||[]).map(child=>child.label).join('、'):'暂无下一层节点'}`).join('<br>')}</div>`:''}
           ${lv>0&&parentQ?`<div class="q-trigger"><span class="q-trigger-label">触发</span><span>条件：${triggerText}</span></div>`:''}
         `;
         item.querySelector('.q-chk').onclick=(e)=>{e.stopPropagation();toggleSelect(q.id,lv);};
@@ -1094,11 +1130,11 @@ function openModal(qId,lv,e,options){
   const items=getQuestionsForLayer(lv);
   const q=items.find(x=>x.id===qId);
   modalPending={qId,lv,sid:q&&q.sid,srcId:q&&q.srcId};
-  modalPickedNodeId=mappings[qId]||null;
+  modalPickedNodeIds=new Set(getMappedNodeIds(qId));
   // 普通节点和系统保留节点属于同一组选项；兼容旧数据时普通节点优先。
-  pendingReserved=new Set(modalPickedNodeId?[]:[...(reservedMappings[qId]||[])].slice(0,1));
+  pendingReserved=new Set(modalPickedNodeIds.size?[]:[...(reservedMappings[qId]||[])].slice(0,1));
   document.getElementById('modal-title').textContent='选择维度节点';
-  document.getElementById('modal-sub').innerHTML=q?`<div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${q.val}</div><div style="font-size:10px;color:var(--text3)">题目ID：${q.id} · 仅展示 ${LV_NAMES[lv]} 节点</div>`:'请选择与当前题目对应的维度节点';
+  document.getElementById('modal-sub').innerHTML=q?`<div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${q.val}</div><div style="font-size:10px;color:var(--text3)">题目ID：${q.id} · 可多选 ${LV_NAMES[lv]} 节点；下层题目将显示每个已选节点的子节点</div>`:'请选择与当前题目对应的维度节点';
   const ms=document.getElementById('modal-search');
   if(ms) ms.value='';
   renderModalList();
@@ -1109,154 +1145,59 @@ function openModal(qId,lv,e,options){
 
 function renderModalList(){
   const list=document.getElementById('modal-list');
-  const searchEl=document.getElementById('modal-search');
-  const q=searchEl?searchEl.value.trim().toLowerCase():'';
+  const search=document.getElementById('modal-search').value.trim().toLowerCase();
   list.innerHTML='';
-  const t=getTree();
-  if(!t){list.innerHTML='<div style="padding:12px;text-align:center;font-size:12px;color:var(--text3)">请先选择维度树</div>';return;}
-  if(!t.nodes||t.nodes.length===0){list.innerHTML='<div style="padding:16px;text-align:center;font-size:12px;color:var(--text3)">维度树暂无节点</div>';return;}
-  if(!window.mExp) window.mExp={};
-
-  // 搜索模式：展开所有匹配节点的路径
-  function nodeMatchesSearch(n){return !q||n.label.toLowerCase().includes(q);}
-  function subtreeHasMatch(n){return nodeMatchesSearch(n)||(n.children||[]).some(c=>subtreeHasMatch(c));}
-
-  function build(nodes, depth, container){
-    nodes.forEach(n=>{
-      if(q&&!subtreeHasMatch(n)) return;
-      const hasChildren=(n.children||[]).length>0;
-      if(window.mExp[n.id]===undefined) window.mExp[n.id]=true;
-      const isOpen = q ? true : window.mExp[n.id];
-      const isSel = n.id===modalPickedNodeId;
-      const matches = nodeMatchesSearch(n);
-
-      const wrap=document.createElement('div');
-
-      const row=document.createElement('div');
-      row.className='mli'+(isSel?' sel':'');
-      row.style.cssText=`
-        padding-left:${8+depth*18}px;
-        display:flex;align-items:center;gap:6px;
-        padding-top:7px;padding-right:10px;padding-bottom:7px;
-        cursor:pointer;border-radius:6px;margin:1px 4px;
-        transition:background .1s;
-        ${isSel?'background:var(--blue-light);':''}
-      `;
-
-      // 展开按钮
-      const expBtn=document.createElement('span');
-      expBtn.style.cssText=`width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--text3);border-radius:3px;transition:transform .15s;transform:rotate(${isOpen?90:0}deg);visibility:${hasChildren?'visible':'hidden'}`;
-      expBtn.textContent='▶';
-      expBtn.onclick=(e)=>{e.stopPropagation();window.mExp[n.id]=!window.mExp[n.id];renderModalList();};
-
-      // 颜색 도트
-      const dot=document.createElement('div');
-      dot.style.cssText=`width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${t.color};opacity:${Math.max(0.3,1-depth*0.2)}`;
-
-      // 层级标签
-      const lvTag=document.createElement('span');
-      lvTag.className=LV_NODE_BADGES[n.depth]||'';
-      lvTag.style.cssText='font-size:10px;padding:1px 6px;border-radius:8px;flex-shrink:0;font-weight:500';
-      lvTag.textContent=['L1','L2','L3','L4','L5'][n.depth]||'';
-
-      // 节点名
-      const label=document.createElement('span');
-      label.style.cssText=`font-size:13px;flex:1;${isSel?'color:var(--blue);font-weight:500':''}`;
-      if(q&&matches){
-        // 高亮匹配文字
-        const idx=n.label.toLowerCase().indexOf(q);
-        label.innerHTML=n.label.slice(0,idx)
-          +`<mark style="background:#FEF9C3;color:#713F12;border-radius:2px;padding:0 1px">${n.label.slice(idx,idx+q.length)}</mark>`
-          +n.label.slice(idx+q.length);
-      } else {
-        label.textContent=n.label;
-      }
-
-      // 已选标记
-      if(isSel){
-        const chk=document.createElement('span');
-        chk.style.cssText='font-size:11px;color:var(--blue);flex-shrink:0;font-weight:500';
-        chk.textContent='✓';
-        row.appendChild(expBtn);row.appendChild(dot);row.appendChild(lvTag);row.appendChild(label);row.appendChild(chk);
-      } else {
-        row.appendChild(expBtn);row.appendChild(dot);row.appendChild(lvTag);row.appendChild(label);
-      }
-
-      row.onmouseenter=()=>{if(!isSel) row.style.background='var(--surface2)';};
-      row.onmouseleave=()=>{if(!isSel) row.style.background='';};
-      row.onclick=(e)=>{
-        if(e.target===expBtn||e.target.parentElement===expBtn) return;
-        modalPickedNodeId=n.id;
-        pendingReserved.clear();
-        renderModalList();renderModalDetail();
+  const tree=getTree();
+  if(!tree){list.innerHTML='<div class="cc-empty">请先选择维度树</div>';renderModalDetail();return;}
+  const scope=getAllowedNodesForModal();
+  if(scope.blocked){
+    const empty=document.createElement('div');empty.className='cc-empty';empty.textContent=scope.reason;
+    list.appendChild(empty);renderModalDetail();return;
+  }
+  let shown=0;
+  scope.groups.forEach(group=>{
+    const nodes=group.nodes.filter(node=>!search||node.label.toLowerCase().includes(search)||group.label.toLowerCase().includes(search));
+    if(!nodes.length)return;
+    const heading=document.createElement('div');heading.className='modal-group-title';heading.textContent=group.label;
+    list.appendChild(heading);
+    nodes.forEach(node=>{
+      shown++;
+      const row=document.createElement('label');row.className='modal-node-option';
+      const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=node.id;
+      checkbox.checked=modalPickedNodeIds.has(node.id);
+      checkbox.setAttribute('aria-label',node.label);
+      checkbox.onchange=()=>{
+        if(checkbox.checked){modalPickedNodeIds.add(node.id);pendingReserved.clear();}
+        else modalPickedNodeIds.delete(node.id);
+        renderModalList();
       };
-
-      wrap.appendChild(row);
-
-      if(hasChildren&&isOpen){
-        const childWrap=document.createElement('div');
-        build(n.children,depth+1,childWrap);
-        wrap.appendChild(childWrap);
-      }
-      container.appendChild(wrap);
+      const badge=document.createElement('span');badge.className=LV_NODE_BADGES[node.depth]||'';
+      badge.textContent='L'+(node.depth+1);
+      const name=document.createElement('span');name.className='node-label';name.textContent=node.label;
+      const next=document.createElement('small');next.textContent=node.depth<4?'下一层 '+(node.children||[]).length+' 个节点':'末级节点';
+      row.append(checkbox,badge,name,next);list.appendChild(row);
     });
-  }
-
-  // 只展示目标层级节点
-  const targetLv=modalPending?modalPending.lv:0;
-  const allFlat=flatNodes(t.nodes);
-  const targetNodes=allFlat.filter(n=>n.depth===targetLv&&(!q||n.label.toLowerCase().includes(q)));
-  if(!targetNodes.length){
-    list.innerHTML=`<div style="padding:16px;text-align:center;font-size:12px;color:var(--text3);line-height:1.8">逻辑树第${['一','二','三','四','五'][targetLv]}层暂无节点<br><span style="font-size:11px">请先在树管理页为该层级添加节点</span></div>`;
-    return;
-  }
-  targetNodes.forEach(n=>{
-    const isSel=n.id===modalPickedNodeId;
-    const row=document.createElement('div');
-    row.className='mli'+(isSel?' sel':'');
-    row.style.cssText=`display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;${isSel?'background:var(--blue-light);':''}`;
-    row.onmouseenter=()=>{if(!isSel)row.style.background='var(--surface2)';};
-    row.onmouseleave=()=>{if(!isSel)row.style.background='';};
-    const dot=document.createElement('div');
-    dot.style.cssText=`width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${t.color}`;
-    const lvTag=document.createElement('span');
-    lvTag.className=LV_NODE_BADGES[n.depth]||'';
-    lvTag.style.cssText='font-size:10px;padding:1px 6px;border-radius:8px;flex-shrink:0;font-weight:500';
-    lvTag.textContent=['L1','L2','L3','L4','L5'][n.depth]||'';
-    const lbl=document.createElement('span');
-    lbl.style.cssText=`font-size:13px;flex:1;${isSel?'color:var(--blue);font-weight:500':''}`;
-    if(q){const i2=n.label.toLowerCase().indexOf(q);lbl.innerHTML=n.label.slice(0,i2)+`<mark style="background:#FEF9C3;color:#713F12;border-radius:2px">${n.label.slice(i2,i2+q.length)}</mark>`+n.label.slice(i2+q.length);}
-    else{lbl.textContent=n.label;}
-    row.appendChild(dot);row.appendChild(lvTag);row.appendChild(lbl);
-    if(isSel){const chk=document.createElement('span');chk.style.cssText='font-size:11px;color:var(--blue);font-weight:500';chk.textContent='✓';row.appendChild(chk);}
-    row.onclick=()=>{modalPickedNodeId=n.id;pendingReserved.clear();renderModalList();renderModalDetail();};
-    list.appendChild(row);
   });
+  if(!shown){const empty=document.createElement('div');empty.className='cc-empty';empty.textContent='未找到匹配的维度节点';list.appendChild(empty);}
   renderModalDetail();
 }
 
 function renderModalDetail(){
   document.querySelectorAll('.reserved-panel input').forEach(input=>{input.checked=pendingReserved.has(input.value);});
-  const pathEl=document.getElementById('modal-path');
-  const list=document.getElementById('modal-child-list');
-  if(!pathEl||!list)return;
-  const t=getTree();
-  const node=modalPickedNodeId&&t?findNode(t.nodes,modalPickedNodeId):null;
-  pathEl.textContent=node?`当前路径：${node.id} / ${getNodePathLabel(node.id)}`:'当前路径：请选择左侧节点';
-  list.innerHTML='';
-  if(!node){list.innerHTML='<div style="padding:18px;color:#999;font-size:11px">选择左侧节点后显示其子节点</div>';}
-  else if(!(node.children||[]).length){list.innerHTML='<div style="padding:18px;color:#999;font-size:11px">当前节点暂无子节点</div>';}
-  else node.children.forEach(child=>{
-    const row=document.createElement('div');row.className='modal-child-item';
-    row.innerHTML=`<span class="cc-lv-badge ${LV_NODE_BADGES[child.depth]||''}">L${child.depth+1}</span><span>${child.label}</span>`;
-    list.appendChild(row);
-  });
+  const summary=document.getElementById('modal-selection-summary');
+  const tree=getTree();
+  const nodes=[...modalPickedNodeIds].map(id=>tree&&findNode(tree.nodes,id)).filter(Boolean);
+  if(nodes.length){
+    summary.textContent='已选 '+nodes.length+' 个维度：'+nodes.map(node=>node.label).join('、')+'。'+
+      (modalPending&&modalPending.lv<4?'后续层级：'+nodes.map(node=>node.label+' → '+((node.children||[]).map(child=>child.label).join('、')||'暂无下一层节点')).join('；'):'');
+  }else if(pendingReserved.size){summary.textContent='已选择系统保留节点：'+[...pendingReserved][0];}
+  else summary.textContent='可勾选多个维度节点，确认后分别显示对应的后续层级。';
 }
 
 function toggleReserved(input){
   if(!input.checked)return;
   pendingReserved=new Set([input.value]);
-  modalPickedNodeId=null;
+  modalPickedNodeIds.clear();
   renderModalList();
   renderModalDetail();
 }
@@ -1265,29 +1206,29 @@ function toggleReserved(input){
 function confirmModal(){
   if(modalPending){
     const qId=modalPending.qId;
-    const oldNodeId=mappings[qId]||null;
+    const oldNodeIds=getMappedNodeIds(qId);
     const oldReserved=[...(reservedMappings[qId]||[])][0]||null;
     const pickedReserved=[...pendingReserved][0]||null;
-    if(!modalPickedNodeId&&!pickedReserved){
-      alert('请选择一个维度节点或系统保留节点');
+    if(!modalPickedNodeIds.size&&!pickedReserved){
+      alert('请选择至少一个维度节点或一个系统保留节点');
       return;
     }
-    if(modalPickedNodeId){
-    const scope=getAllowedNodesForModal();
-    if(modalPending.lv>0&&!scope.nodes.some(n=>n.id===modalPickedNodeId)){
-      alert('请选择上一层维度的子维度');
-      return;
-    }
-      mappings[qId]=modalPickedNodeId;
+    if(modalPickedNodeIds.size){
+      const allowed=new Set(getAllowedNodesForModal().nodes.map(node=>node.id));
+      if([...modalPickedNodeIds].some(id=>!allowed.has(id))){
+        alert('请只选择上一层已选维度的子维度');
+        return;
+      }
+      mappings[qId]=[...modalPickedNodeIds];
       delete reservedMappings[qId];
     }else{
       delete mappings[qId];
       reservedMappings[qId]=new Set([pickedReserved]);
     }
-    const oldChoice=oldNodeId?`node:${oldNodeId}`:(oldReserved?`reserved:${oldReserved}`:'');
-    const newChoice=modalPickedNodeId?`node:${modalPickedNodeId}`:`reserved:${pickedReserved}`;
+    const oldChoice=oldNodeIds.slice().sort().join(',')+'|'+(oldReserved||'');
+    const newChoice=[...modalPickedNodeIds].sort().join(',')+'|'+(pickedReserved||'');
     if(oldChoice!==newChoice&&modalPending.lv<4&&modalPending.sid){
-      clearChildMappings(modalPending.qId,modalPending.lv,modalPending.sid);
+      pruneChildMappings(modalPending.qId,modalPending.lv,modalPending.sid);
     }
   }
   closeModal();
@@ -1296,7 +1237,7 @@ function confirmModal(){
 
 function closeModal(){
   document.getElementById('modal').style.display='none';
-  modalPending=null;modalPickedNodeId=null;pendingReserved=new Set();
+  modalPending=null;modalPickedNodeIds=new Set();pendingReserved=new Set();
 }
 
 // ── 预览 ──
@@ -1323,11 +1264,13 @@ function renderPreview(){
   const LV_COLORS=['background:#EEF2FF;color:#3730A3','background:#F0FDF4;color:#166534','background:#FFFBEB;color:#92400E','background:#FFF1F2;color:#9F1239','background:#F5F3FF;color:#5B21B6'];
 
   const mappingByNode={};
-  Object.entries(mappings).forEach(([qid,nodeId])=>{
+  Object.keys(mappings).forEach(qid=>{
     const {foundQ,foundSv}=findQInfo(qid);
     if(!foundQ||!foundSv)return;
-    if(!mappingByNode[nodeId])mappingByNode[nodeId]=[];
-    mappingByNode[nodeId].push({qid,foundQ,foundSv,lv:getQuestionLevel(qid),path:getNodePathLabel(nodeId)});
+    getMappedNodeIds(qid).forEach(nodeId=>{
+      if(!mappingByNode[nodeId])mappingByNode[nodeId]=[];
+      mappingByNode[nodeId].push({qid,foundQ,foundSv,lv:getQuestionLevel(qid),path:getNodePathLabel(nodeId)});
+    });
   });
 
   const hasAnyMapping=Object.keys(mappingByNode).length>0;
@@ -1371,7 +1314,7 @@ function renderPreview(){
       <div class="preview-node-row">
         <span class="preview-level" style="${LV_COLORS[n.depth]||''}">${levelLabel}</span>
         <span class="preview-node-name">${n.label}</span>
-        <span class="preview-count">${total}题</span>
+        <span class="preview-count">${total}条关联</span>
       </div>
       <div class="preview-parent-note">父节点：${item.parent?item.parent.label:'无，根节点'}</div>
     `;
@@ -1447,7 +1390,7 @@ function removeMapping(qid){
 function saveAll(){
   const btn=document.querySelector('.topbar-actions .btn-primary');
   treeStates[currentTreeId]={
-    mappings:{...mappings},
+    mappings:Object.fromEntries(Object.entries(mappings).map(([id])=>[id,[...getMappedNodeIds(id)]])),
     reservedMappings:Object.fromEntries(Object.entries(reservedMappings).map(([k,v])=>[k,[...v]])),
     layerSelected:layerSelected.map(set=>[...set])
   };
@@ -1455,9 +1398,9 @@ function saveAll(){
   setTimeout(()=>{btn.textContent='保存';btn.style.background='';},1500);
 }
 </script>
-<script src="../assets/js/association-export.js?v=20261126-f02-closed"></script>
+<script src="../assets/js/association-export.js?v=20261126-f02-multiselect"></script>
 <script src="../annotations/association-config.js"></script>
-<script src="../annotations/annotations.js?v=20261012-no-layer"></script>
+<script src="../annotations/annotations.js?v=20261126-f02-multiselect"></script>
 <script src="../annotations/annotation-runtime.js"></script>
 <script>
 document.querySelectorAll('.tcs-nav-parent').forEach(button => {

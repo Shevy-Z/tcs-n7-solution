@@ -16,13 +16,13 @@
     const nodes = nodeIndex(tree ? tree.nodes : []);
     let configuredCount = 0;
     function choice(questionId) {
-      const normalId = state.mappings[questionId];
+      const normalValue = state.mappings[questionId];
+      const normalIds = Array.isArray(normalValue) ? normalValue.filter(Boolean) : (normalValue ? [normalValue] : []);
       const reservedNames = Array.from(state.reservedMappings[questionId] || []);
-      const normalNode = normalId ? nodes.get(normalId) : null;
       return {
-        configured: Boolean(normalId || reservedNames.length),
-        nodeName: normalId ? (normalNode ? normalNode.label : '') : (reservedNames[0] || ''),
-        nodeType: normalId ? '普通节点' : reservedNames.length ? '系统保留节点' : ''
+        configured: Boolean(normalIds.length || reservedNames.length),
+        nodeName: normalIds.length ? normalIds.map(id => nodes.get(id)?.label || '').filter(Boolean).join('、') : (reservedNames[0] || ''),
+        nodeType: normalIds.length ? '普通节点' : reservedNames.length ? '系统保留节点' : ''
       };
     }
     state.surveys.forEach(survey => {
@@ -64,7 +64,7 @@
   function readState() {
     return {
       tree: getTree(), surveys: selectedSurveys.slice(), questionTrees: SURVEY_TREE,
-      mappings: { ...mappings },
+      mappings: Object.fromEntries(Object.entries(mappings).map(([id, value]) => [id, Array.isArray(value) ? value.slice() : value])),
       reservedMappings: Object.fromEntries(Object.entries(reservedMappings).map(([id, names]) => [id, Array.from(names)]))
     };
   }
