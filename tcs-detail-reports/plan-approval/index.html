@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCS · 需求评审 V1 · 静态演示</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="stylesheet" href="assets/css/hub.css">
+  <link rel="stylesheet" href="assets/css/monthly-sampling.css">
+  <link rel="stylesheet" href="annotations/annotation.css">
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="main-nav" class="app-sidebar" aria-label="TCS 主导航"></nav>
+    <button id="mobile-nav-toggle" class="mobile-nav-toggle" type="button" aria-label="打开导航" aria-controls="main-nav" aria-expanded="false">菜单</button>
+    <div id="sidebar-scrim" class="sidebar-scrim" aria-hidden="true"></div>
+    <section class="app-workspace">
+      <header class="app-topbar">
+        <span id="topbar-page" class="sr-only">人工审核点评</span>
+        <a class="hub-return" href="../index.html?view=review">返回人工审核点评</a>
+        <div class="review-edition"><span class="review-edition__title">需求评审 V1 <span>· 静态演示</span></span></div>
+        <div class="app-topbar__meta">
+          <span class="user-name">admin（Mock）</span>
+          <span class="user-role">超级管理员 · 演示角色</span>
+        </div>
+      </header>
+      <main id="app" class="app-main" tabindex="-1">
+        <div class="route-loading">正在载入原型…</div>
+      </main>
+    </section>
+  </div>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <div id="overlay-root"></div>
+
+  <script src="mock/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/components/ui.js"></script>
+  <script src="js/components/calculator.js"></script>
+  <script src="js/components/monthly-sampling.js"></script>
+  <script src="js/components/push-date.js"></script>
+  <script src="js/components/organization-snapshot.js"></script>
+  <script src="js/pages/home.js"></script>
+  <script src="js/pages/plan.js"></script>
+  <script src="js/pages/sampling.js"></script>
+  <script src="js/pages/review.js"></script>
+  <script src="js/pages/questionnaire-report.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/app.js"></script>
+  <script src="annotations/annotations.js"></script>
+  <script src="annotations/business-bridge.js"></script>
+  <script src="annotations/annotation-runtime.js"></script>
+</body>
+</html>
