@@ -189,12 +189,9 @@
     function locateFeature() {
       const feature = (new URLSearchParams(window.location.search).get('feature') || window.location.hash.slice(1)).toUpperCase();
       if (feature === 'F03') { openPreview(); return; }
-      if (feature === 'F02') {
-        for (let level = 0; level < 5; level++) {
-          const question = getQuestionsForLayer(level).find(item => layerSelected[level].has(item.id));
-          if (question) { openModal(question.id, level); return; }
-        }
-      }
+      // F02 identifies the node-selection feature; open its dialog only when
+      // the user selects a question or clicks its configuration control.
+      if (feature === 'F02') return;
       if (feature === 'F01') {
         const heading = byId('F01'); heading.classList.add('assoc-feature-focus'); heading.focus({ preventScroll: true });
         const counter = document.querySelector('.cc-layer-progress'); if (counter) counter.scrollIntoView({ block: 'nearest', inline: 'nearest' });
