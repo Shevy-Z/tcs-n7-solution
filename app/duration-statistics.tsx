@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { durationReferenceDocHtml } from "./duration-reference-doc";
 
 type DurationTab = "question" | "vehicle" | "type";
 
@@ -101,6 +102,8 @@ export default function DurationStatistics({ onNotice }: { onNotice: (message: s
   const [cycle, setCycle] = useState("2026-11");
   const [status, setStatus] = useState("全部");
   const [modal, setModal] = useState<"question" | "survey" | "help" | null>(null);
+  const [docTab, setDocTab] = useState<"page" | "rules" | null>(null);
+  const docRef = useRef<HTMLElement>(null);
   const config = configs[activeTab];
   const pageSize = 10;
 
@@ -110,6 +113,40 @@ export default function DurationStatistics({ onNotice }: { onNotice: (message: s
     document.addEventListener("keydown", close);
     return () => document.removeEventListener("keydown", close);
   }, [modal]);
+
+  useEffect(() => {
+    if (!docTab) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    docRef.current?.querySelectorAll<HTMLElement>("[data-doc-tab]").forEach((button) => {
+      button.setAttribute("aria-selected", String(button.dataset.docTab === docTab));
+    });
+    const close = (event: KeyboardEvent) => event.key === "Escape" && setDocTab(null);
+    document.addEventListener("keydown", close);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", close); };
+  }, [docTab]);
+
+  const openDocument = (tab: "page" | "rules") => {
+    setDocTab(tab);
+    window.requestAnimationFrame(() => {
+      const panel = docRef.current?.querySelector<HTMLElement>(`[data-doc-panel="${tab}"]`);
+      const section = tab === "rules" ? "rule" : "page-overview";
+      panel?.querySelectorAll<HTMLButtonElement>(".drawer-nav button").forEach((button) => button.classList.toggle("active", button.dataset.section === section));
+      panel?.querySelector<HTMLElement>(`#${section}`)?.scrollIntoView({ block: "start" });
+    });
+  };
+
+  const handleDocumentClick = (event: ReactMouseEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("#closeDrawer")) { setDocTab(null); return; }
+    const tab = target.closest<HTMLElement>("[data-doc-tab]")?.dataset.docTab;
+    if (tab === "page" || tab === "rules") { openDocument(tab); return; }
+    const section = target.closest<HTMLButtonElement>("[data-section]")?.dataset.section;
+    if (!section) return;
+    const panel = docRef.current?.querySelector<HTMLElement>(`[data-doc-panel="${docTab}"]`);
+    panel?.querySelectorAll<HTMLButtonElement>(".drawer-nav button").forEach((button) => button.classList.toggle("active", button.dataset.section === section));
+    panel?.querySelector<HTMLElement>(`#${section}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const filtered = useMemo(() => config.rows.filter((row) => row.join("").toLowerCase().includes(query.toLowerCase())), [config, query]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -134,6 +171,7 @@ export default function DurationStatistics({ onNotice }: { onNotice: (message: s
 
   return (
     <div className="duration-page">
+      <div className="duration-reference-actions"><button type="button" onClick={() => openDocument("rules")}>⚙ 时长规则</button><button type="button" onClick={() => openDocument("page")}>▤ 产品说明文档</button></div>
       <section className="duration-filter-card">
         <div className="duration-filter-title"><div><span>DATA SCOPE</span><h2>统计范围</h2></div><button type="button" onClick={() => setModal("help")}>? 使用说明</button></div>
         <div className="duration-filter-grid">
@@ -171,6 +209,7 @@ export default function DurationStatistics({ onNotice }: { onNotice: (message: s
       </section>
 
       {modal && <div className="duration-modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setModal(null)}><section className="duration-modal" role="dialog" aria-modal="true"><button className="duration-modal-close" type="button" onClick={() => setModal(null)}>×</button><span>STATISTICS RULE</span><h2>{modal === "question" ? "答题时长百分位配置" : modal === "survey" ? "答卷时长百分位配置" : "答题时长统计说明"}</h2>{modal === "help" ? <p>页面按问卷、车系和问卷类型三个维度汇总答题及答卷时长。有效时长由样本均值、标准差和百分位阈值共同计算，可用于快速定位时间过短或过长的异常记录。</p> : <><p>当前采用 P5–P95 百分位范围，并结合标准差校正异常阈值。配置仅影响统计识别，不改变原始答卷数据。</p><div className="duration-config-row"><label>下限百分位<select defaultValue="P5"><option>P1</option><option>P5</option><option>P10</option></select></label><label>上限百分位<select defaultValue="P95"><option>P90</option><option>P95</option><option>P99</option></select></label></div><button className="duration-modal-primary" type="button" onClick={() => { setModal(null); onNotice("百分位配置已保存"); }}>保存配置</button></>}</section></div>}
+      {docTab && <div className="duration-doc-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setDocTab(null)}><aside className="duration-doc-drawer" ref={docRef} data-tab={docTab} role="dialog" aria-modal="true" aria-label={docTab === "rules" ? "时长规则" : "产品说明文档"} onClick={handleDocumentClick} dangerouslySetInnerHTML={{ __html: durationReferenceDocHtml }} /></div>}
     </div>
   );
 }

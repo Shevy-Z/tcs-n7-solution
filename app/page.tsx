@@ -43,6 +43,19 @@ const pageInfo: Record<PageKey, { label: string; hint: string }> = {
   sampleValidity: { label: "系统样本有效性", hint: "问卷评分题目有效性配置" },
 };
 
+const menuGroups: { key: string; label: string; icon: string; items: { label: string; page?: PageKey }[] }[] = [
+  { key: "permissions", label: "权限管理", icon: "♙", items: [{ label: "用户管理" }, { label: "角色管理" }, { label: "菜单管理" }] },
+  { key: "questionnaires", label: "问卷管理", icon: "▣", items: [{ label: "问卷列表" }] },
+  { key: "approvals", label: "审批管理", icon: "⌁", items: [{ label: "问卷发布审批" }, { label: "人工审核点评", page: "review" }, { label: "调查方案审批" }, { label: "我的审批" }] },
+  { key: "assets", label: "素材管理", icon: "▤", items: [{ label: "链接库" }, { label: "图标库" }] },
+  { key: "statistics", label: "统计报表", icon: "◔", items: [
+    { label: "车主统计TCS" }, { label: "未点评里推送日志" }, { label: "问题表明细", page: "question" },
+    { label: "客户表明细", page: "customer" }, { label: "点评奖励发放日志" }, { label: "答题时长统计", page: "duration" },
+    { label: "逻辑树管理" }, { label: "逻辑树关联配置" }, { label: "问卷报表明细", page: "survey" },
+  ] },
+  { key: "configuration", label: "配置管理", icon: "⚿", items: [{ label: "系统样本有效性", page: "sampleValidity" }, { label: "积分发放配置" }] },
+];
+
 const filters: Filter[] = [
   { key: "planId", label: "方案ID", type: "text", placeholder: "请输入方案ID" },
   { key: "surveyType", label: "问卷类型", type: "select", options: ["全部", "NPS", "CCS", "ADAS", "专项"] },
@@ -332,6 +345,7 @@ function SideIcon({ children }: { children: React.ReactNode }) {
 export default function Home() {
   const [activePage, setActivePage] = useState<PageKey>("question");
   const [collapsed, setCollapsed] = useState(false);
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => Object.fromEntries(menuGroups.map((group) => [group.key, true])));
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [form, setForm] = useState<Record<string, string>>({});
   const [applied, setApplied] = useState<Record<string, string>>({});
@@ -434,31 +448,15 @@ export default function Home() {
           <span className="brand-text"><b>微信客户调研平台</b><small>TCS</small></span>
         </div>
         <nav className="main-nav" aria-label="系统菜单">
-          <div className="nav-parent"><SideIcon>♙</SideIcon><span>权限管理</span><i>⌄</i></div>
-          <div className="nav-parent"><SideIcon>▣</SideIcon><span>问卷管理</span><i>⌄</i></div>
-          <div className={`nav-parent ${activePage === "review" ? "open" : ""}`}><SideIcon>⌁</SideIcon><span>审批管理</span><i>{activePage === "review" ? "⌃" : "⌄"}</i></div>
-          <div className="subnav approval-subnav">
-            <button className={activePage === "review" ? "active" : ""} type="button" onClick={() => switchPage("review")}><span>人工审核点评</span></button>
-          </div>
-          <div className="nav-parent"><SideIcon>▤</SideIcon><span>素材管理</span><i>⌄</i></div>
-          <div className="nav-parent open"><SideIcon>◔</SideIcon><span>统计报表</span><i>⌃</i></div>
-          <div className="subnav">
-            <button type="button"><span>车主统计TCS</span></button>
-            <button type="button"><span>未点评里推送进度日志</span></button>
-            {(["question", "customer", "survey"] as DetailPageKey[]).map((key) => (
-              <button className={activePage === key ? "active" : ""} key={key} type="button" onClick={() => switchPage(key)}>
-                <span>{pageInfo[key].label}</span>
-              </button>
-            ))}
-            <button type="button"><span>点评奖励发放日志</span></button>
-            <button className={activePage === "duration" ? "active" : ""} type="button" onClick={() => switchPage("duration")}><span>答题时长统计</span></button>
-            <button type="button"><span>逻辑树管理</span></button>
-            <button type="button"><span>逻辑树关联配置</span></button>
-          </div>
-          <div className={`nav-parent ${activePage === "sampleValidity" ? "open" : ""}`}><SideIcon>⚿</SideIcon><span>配置管理</span><i>{activePage === "sampleValidity" ? "⌃" : "⌄"}</i></div>
-          <div className="subnav"><button className={activePage === "sampleValidity" ? "active" : ""} type="button" onClick={() => switchPage("sampleValidity")}><span>系统样本有效性</span></button></div>
+          {menuGroups.map((group) => <div className="nav-group" key={group.key}>
+            <button className={`nav-parent ${openMenus[group.key] ? "open" : ""}`} type="button" aria-expanded={openMenus[group.key]} aria-controls={`nav-${group.key}`} onClick={() => setOpenMenus((menus) => ({ ...menus, [group.key]: !menus[group.key] }))}>
+              <SideIcon>{group.icon}</SideIcon><span>{group.label}</span><i>{openMenus[group.key] ? "⌃" : "⌄"}</i>
+            </button>
+            <div className="subnav" id={`nav-${group.key}`} hidden={!openMenus[group.key]}>
+              {group.items.map((item) => <button className={item.page && activePage === item.page ? "active" : ""} key={item.label} type="button" onClick={() => item.page ? switchPage(item.page) : setNotice(`${item.label}页面暂未接入`)}><span>{item.label}</span></button>)}
+            </div>
+          </div>)}
         </nav>
-        <div className="sidebar-foot"><span className="status-dot" /> <span>系统运行正常</span></div>
       </aside>
 
       <div className="workspace">
