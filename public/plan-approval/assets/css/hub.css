@@ -1,0 +1,60 @@
+/* Review-only entry page. Business routes retain their existing SIT layout. */
+body.tcs-hub .app-sidebar,
+body.tcs-hub .app-topbar,
+body.tcs-hub .mobile-nav-toggle,
+body.tcs-hub #sidebar-scrim { display: none; }
+body.tcs-hub .app-workspace { margin-left: 0; min-height: 100dvh; }
+body.tcs-hub .app-main { padding: 0; background: #f3f6fa; }
+body.tcs-hub.anno-b-reserved { padding-inline-end: 0; }
+
+.hub-return { display: inline-flex; align-items: center; height: 32px; margin-right: 20px; padding-right: 20px; border-right: 1px solid #d9e0e8; color: #245d99; font-size: 13px; white-space: nowrap; }
+.hub-return:hover { color: #1672c7; }
+
+.hub-page { min-height: 100dvh; background: #f3f6fa; color: #243349; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+.hub-header { height: 70px; max-width: 1260px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d9e2ec; }
+.hub-wordmark { display: flex; align-items: baseline; gap: 14px; color: #243349; }
+.hub-wordmark strong { color: #1264a5; font-size: 24px; font-weight: 750; letter-spacing: -.04em; }
+.hub-wordmark span { font-size: 14px; font-weight: 600; }
+.hub-header-note { color: #5f7085; font-size: 13px; }
+.hub-content { max-width: 1260px; margin: 0 auto; padding: 54px 32px 64px; }
+.hub-intro { margin-bottom: 36px; }
+.hub-intro h1 { margin: 0 0 12px; color: #1f3047; font-size: clamp(28px, 3.4vw, 42px); font-weight: 700; line-height: 1.25; letter-spacing: -.03em; }
+.hub-intro p { margin: 0; color: #52667d; font-size: 16px; line-height: 1.65; }
+.hub-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+.hub-card { min-width: 0; min-height: 190px; padding: 27px 29px; border: 1px solid #d9e2ec; border-radius: 12px; background: #fff; box-shadow: 0 8px 20px rgba(31, 62, 100, .035); transition: border-color .15s ease, transform .15s ease; }
+.hub-card:hover { border-color: #90b5d6; transform: translateY(-2px); }
+.hub-card h2 { margin: 0 0 12px; color: #203653; font-size: 24px; font-weight: 650; line-height: 1.35; }
+.hub-card h2 a { color: inherit; text-decoration: none; }
+.hub-card h2 a:hover { color: #1264a5; }
+.hub-card h2 span { margin-left: 5px; color: #1264a5; font-size: 17px; }
+.hub-card p { max-width: 45ch; margin: 0; color: #52667d; font-size: 14px; line-height: 1.7; }
+.hub-card small { display: block; margin-top: 17px; color: #68798d; font-size: 12px; line-height: 1.55; }
+.hub-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 23px; }
+.hub-links a { color: #1264a5; font-size: 13px; font-weight: 600; line-height: 1.6; text-decoration: none; }
+.hub-links a:hover { color: #0a4c80; text-decoration: underline; }
+.hub-card--list { grid-column: span 5; background: #fbfcfe; }
+.hub-card--prototype { grid-column: span 7; background: #eaf3fb; border-color: #c8ddee; }
+.hub-card--algorithm { grid-column: span 3; }
+.hub-card--examples { grid-column: span 4; background: #f8fafc; }
+.hub-card--flows { grid-column: span 5; background: #f2f7fc; }
+.hub-boundary { margin: 24px 0 0; color: #617287; font-size: 12px; line-height: 1.6; }
+.hub-page a:focus-visible,
+.hub-return:focus-visible { outline: 3px solid #1264a5; outline-offset: 3px; border-radius: 3px; }
+@media (max-width: 900px) {
+  .hub-card--list, .hub-card--prototype { grid-column: span 6; }
+  .hub-card--algorithm, .hub-card--examples, .hub-card--flows { grid-column: span 4; }
+  .hub-card { padding: 22px; }
+}
+@media (max-width: 700px) {
+  .hub-header { height: 62px; padding: 0 18px; }
+  .hub-content { padding: 36px 18px 44px; }
+  .hub-intro { margin-bottom: 25px; }
+  .hub-grid { grid-template-columns: 1fr; gap: 12px; }
+  .hub-card--list, .hub-card--prototype, .hub-card--algorithm, .hub-card--examples, .hub-card--flows { grid-column: 1; }
+  .hub-card { min-height: 0; padding: 21px; }
+  .hub-card h2 { font-size: 22px; }
+  .hub-links { margin-top: 17px; }
+  .hub-header-note { display: none; }
+  .hub-return { margin-right: 10px; padding-right: 10px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .hub-card { transition: none; } .hub-card:hover { transform: none; } }

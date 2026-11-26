@@ -5,6 +5,7 @@ import DurationStatistics from "./duration-statistics";
 import ManualReview from "./manual-review";
 import SystemSampleValidity from "./system-sample-validity";
 import SearchableMultiSelect from "./searchable-multi-select";
+import PageGuide from "./page-guide";
 import { anomalyFilterOptions, anomalyLabels, maskVin, type AuditSignals, resolveAnomalyId } from "./anomaly-id";
 
 type DetailPageKey = "question" | "customer" | "survey";
@@ -44,11 +45,15 @@ const pageInfo: Record<PageKey, { label: string; hint: string }> = {
 };
 
 const logicTreeAssociationUrl = "https://shevy-z.github.io/tcs-n7-solution/tcs-detail-reports/logic-tree-association/pages/association.html?feature=F02&preview=20261012-no-layer";
+const logicTrees = [
+  { id: "delivery", label: "交车体验逻辑树（Mock）", level1Items: ["交车体验", "车辆讲解"] },
+  { id: "service", label: "服务体验逻辑树（Mock）", level1Items: ["服务体验", "服务效率"] },
+];
 
 const menuGroups: { key: string; label: string; icon: string; items: { label: string; page?: PageKey; href?: string }[] }[] = [
   { key: "permissions", label: "权限管理", icon: "♙", items: [{ label: "用户管理" }, { label: "角色管理" }, { label: "菜单管理" }] },
   { key: "questionnaires", label: "问卷管理", icon: "▣", items: [{ label: "问卷列表" }] },
-  { key: "approvals", label: "审批管理", icon: "⌁", items: [{ label: "问卷发布审批" }, { label: "人工审核点评", page: "review" }, { label: "调查方案审批" }, { label: "我的审批" }] },
+  { key: "approvals", label: "审批管理", icon: "⌁", items: [{ label: "问卷发布审批" }, { label: "人工审核点评", page: "review" }, { label: "调查方案审批", href: "plan-approval/index.html#plan" }, { label: "我的审批" }] },
   { key: "assets", label: "素材管理", icon: "▤", items: [{ label: "链接库" }, { label: "图标库" }] },
   { key: "statistics", label: "统计报表", icon: "◔", items: [
     { label: "车主统计TCS" }, { label: "未点评里推送日志" }, { label: "问题表明细", page: "question" },
@@ -283,6 +288,7 @@ function buildRows(page: DetailPageKey): Row[] {
       planId: index < 8 ? "118" : "126",
       surveyType: ["NPS", "CCS", "ADAS", "专项"][index % 4],
       surveyId: index % 3 === 2 ? "Q20261012" : "Q20260901",
+      logicTreeId: index % 2 === 0 ? "delivery" : "service",
       pushId: ["97051", "96905", "96676", "96674", "96576"][index % 5],
       commentStatus: ["未填写", "填写中", "已完成"][index % 3],
       commentTime: index % 3 === 2 ? "2026-10-31 15:36:43" : "—",
@@ -352,6 +358,7 @@ export default function Home() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [applied, setApplied] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
+  const [logicTreeId, setLogicTreeId] = useState("all");
 
   useEffect(() => {
     const view = new URLSearchParams(window.location.search).get("view") as PageKey | null;
@@ -391,8 +398,9 @@ export default function Home() {
     const activeEntries = Object.entries(applied).filter(([key, value]) => value && value !== "全部" && key !== "commentTimeStart" && key !== "commentTimeEnd");
     const start = applied.commentTimeStart;
     const end = applied.commentTimeEnd;
-    if (!activeEntries.length && !start && !end) return allRows;
+    if (!activeEntries.length && !start && !end && (activePage !== "survey" || logicTreeId === "all")) return allRows;
     return allRows.filter((row) => {
+      if (activePage === "survey" && logicTreeId !== "all" && row.logicTreeId !== logicTreeId) return false;
       const valuesMatch = activeEntries.every(([key, value]) => {
         if (key === "mis" || key === "seriesCode" || key === "baselineSeriesCode") return value.split(",").includes(String(row[key] ?? ""));
         if (key === "anomalyId") {
@@ -407,12 +415,13 @@ export default function Home() {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(rowDate)) return false;
       return (!start || rowDate >= start) && (!end || rowDate <= end);
     });
-  }, [allRows, applied]);
+  }, [allRows, applied, activePage, logicTreeId]);
 
   const switchPage = (key: PageKey) => {
     setActivePage(key);
     setApplied({});
     setForm({});
+    setLogicTreeId("all");
     const next = new URL(window.location.href);
     next.searchParams.set("view", key);
     window.history.replaceState({}, "", next);
@@ -426,6 +435,7 @@ export default function Home() {
   const reset = () => {
     setForm({});
     setApplied({});
+    setLogicTreeId("all");
     setNotice("筛选条件已重置");
   };
 
@@ -443,7 +453,7 @@ export default function Home() {
   };
 
   return (
-    <div className={`app-shell ${collapsed ? "nav-collapsed" : ""}`}>
+    <div className={`app-shell ${collapsed ? "nav-collapsed" : ""} ${activePage === "survey" || activePage === "review" ? "has-guide" : ""}`}>
       <aside className="sidebar">
         <div className="brand-block">
           <span className="brand-orbit">NISSAN</span>
@@ -455,7 +465,7 @@ export default function Home() {
               <SideIcon>{group.icon}</SideIcon><span>{group.label}</span><i>{openMenus[group.key] ? "⌃" : "⌄"}</i>
             </button>
             <div className="subnav" id={`nav-${group.key}`} hidden={!openMenus[group.key]}>
-              {group.items.map((item) => <button className={item.page && activePage === item.page ? "active" : ""} key={item.label} type="button" onClick={() => item.page ? switchPage(item.page) : item.href ? window.location.assign(item.href) : setNotice(`${item.label}页面暂未接入`)}><span>{item.label}</span></button>)}
+              {group.items.map((item) => <button className={item.page && activePage === item.page ? "active" : ""} key={item.label} type="button" onClick={() => item.page ? switchPage(item.page) : item.href ? window.location.assign(new URL(item.href, window.location.href).href) : setNotice(`${item.label}页面暂未接入`)}><span>{item.label}</span></button>)}
             </div>
           </div>)}
         </nav>
@@ -484,7 +494,7 @@ export default function Home() {
               <div className="filter-body">
                 <div className="filter-grid">
                   {visibleFilters.map((filter) => (
-                    <label className="field" key={filter.key}>
+                    <label className="field" key={filter.key} data-guide={filter.key}>
                       <span>{filter.label}</span>
                       {filter.type === "select" ? (
                         <select value={form[filter.key] ?? "全部"} onChange={(event) => setForm({ ...form, [filter.key]: event.target.value })}>
@@ -512,12 +522,19 @@ export default function Home() {
             )}
           </section>
 
+          {activePage === "survey" && <section className="survey-logic-panel" id="survey-logic-tree" aria-label="按逻辑树筛选">
+            <label><span>按逻辑树筛选：</span><select value={logicTreeId} onChange={(event) => setLogicTreeId(event.target.value)} aria-label="逻辑树">
+              <option value="all">全部逻辑树</option>{logicTrees.map((tree) => <option key={tree.id} value={tree.id}>{tree.label}</option>)}
+            </select></label>
+            <div className="survey-logic-level"><b>L1</b>{logicTreeId === "all" ? <span>请选择逻辑树（Mock）</span> : logicTrees.find((tree) => tree.id === logicTreeId)?.level1Items.map((item) => <em key={item}>{item}（Mock）</em>)}</div>
+          </section>}
+
           <section className="table-card">
             <div className="table-toolbar">
               <div className="result-title"><span className="section-kicker">RESULT</span><h2>明细列表</h2><em>共 {visibleRows.length} 条</em></div>
               <div className="table-legend"><span><i className="legend-base" />基础信息</span><span><i className="legend-region" />区域信息</span><span><i className="legend-detail" />业务明细</span></div>
               <div className="toolbar-actions">
-                <button className="export-btn" type="button" onClick={exportCsv}>⇩<span>导出</span></button>
+                <button className="export-btn" id="detail-export" type="button" onClick={exportCsv}>⇩<span>导出</span></button>
                 <button type="button" onClick={runSearch} title="刷新">↻</button>
                 <button type="button" title="表格密度">≡</button>
                 <button type="button" title="列设置">⚙</button>
@@ -556,6 +573,7 @@ export default function Home() {
         </main>
       </div>
       {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
+      {(activePage === "survey" || activePage === "review") && <PageGuide key={activePage} page={activePage} />}
     </div>
   );
 }
