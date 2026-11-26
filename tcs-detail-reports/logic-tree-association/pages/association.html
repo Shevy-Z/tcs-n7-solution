@@ -22,18 +22,23 @@
 body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
 .shell{display:flex;flex-direction:row;height:100vh;overflow:hidden}
 .workspace{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
-.sidebar{width:220px;flex:0 0 220px;background:#001529;color:rgba(255,255,255,.68);display:flex;flex-direction:column;flex-shrink:0}
-.side-brand{height:56px;background:#00284D;color:#fff;display:flex;align-items:center;gap:10px;padding:0 18px;font-size:15px;font-weight:600;flex-shrink:0;letter-spacing:-.2px}
-.side-mark{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
-.side-nav{padding:8px 0;overflow-y:auto;flex:1}
-.side-section{height:44px;display:flex;align-items:center;gap:10px;padding:0 20px;font-size:13px;color:rgba(255,255,255,.5);cursor:default}
-.side-section.active{color:rgba(255,255,255,.9)}
-.side-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
-.side-child{height:36px;display:flex;align-items:center;padding-left:46px;font-size:12px;color:rgba(255,255,255,.55);cursor:pointer;transition:all .12s}
-.side-child:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.06)}
-.side-child.current{background:#1677FF;color:#fff;font-weight:500}
-.side-child.muted{color:rgba(255,255,255,.32);cursor:default}
-.side-child.muted:hover{background:none;color:rgba(255,255,255,.32)}
+.tcs-sidebar{width:250px;flex:0 0 250px;background:linear-gradient(180deg,#041827 0%,#07243a 100%);color:#c9d6de;display:flex;flex-direction:column;box-shadow:8px 0 30px rgba(3,22,35,.1);font-family:Inter,'PingFang SC','Microsoft YaHei',sans-serif}
+.tcs-brand{height:82px;flex:0 0 auto;display:flex;align-items:center;gap:11px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.07)}
+.tcs-brand-orbit{position:relative;width:43px;height:26px;flex:0 0 43px;display:grid;place-items:center;color:#dfeaf1;border:1px solid #7591a3;border-radius:50%;font-size:7px;font-weight:700;letter-spacing:.06em}
+.tcs-brand-orbit::before,.tcs-brand-orbit::after{content:"";position:absolute;left:-4px;right:-4px;height:1px;background:#7591a3}
+.tcs-brand-orbit::before{top:8px}.tcs-brand-orbit::after{bottom:8px}
+.tcs-brand-text{display:flex;min-width:0;flex-direction:column;gap:4px;white-space:nowrap}
+.tcs-brand-text b{color:#fff;font-size:14px;letter-spacing:.02em}.tcs-brand-text small{color:#7fa4ba;font-size:10px;font-weight:700;letter-spacing:.2em}
+.tcs-main-nav{flex:1;padding:0 0 24px;overflow-y:auto;scrollbar-width:none}.tcs-main-nav::-webkit-scrollbar{display:none}
+.tcs-nav-parent{width:100%;height:48px;display:grid;grid-template-columns:27px 1fr auto;align-items:center;padding:0 19px;color:#e7eff4;background:#061f33;border:0;text-align:left;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer}
+.tcs-nav-parent:hover,.tcs-nav-parent.open{color:#fff;background:#08243a}.tcs-nav-parent i{color:#d5e3eb;font-style:normal;font-size:13px}
+.tcs-side-icon{width:20px;color:#7da2b8;font-size:14px;text-align:center}
+.tcs-subnav{padding:0;background:#031827}.tcs-subnav[hidden]{display:none}
+.tcs-subnav a,.tcs-subnav button{position:relative;width:100%;height:48px;padding:0 18px 0 42px;display:flex;align-items:center;overflow:hidden;color:#b3c2cb;background:transparent;border:0;text-align:left;text-decoration:none;font-size:12px;white-space:nowrap;transition:.15s ease;cursor:pointer;font-family:inherit}
+.tcs-subnav a:hover,.tcs-subnav button:hover{color:#fff;background:rgba(255,255,255,.04)}
+.tcs-subnav .active{color:#fff;background:#168ff0;font-weight:600}
+.tcs-menu-toast{position:fixed;right:22px;bottom:22px;z-index:100;padding:11px 16px;color:#fff;background:#23465c;border-radius:6px;box-shadow:0 9px 24px rgba(0,0,0,.2);font-size:12px}
+.tcs-menu-toast[hidden]{display:none}
 
 .body{display:flex;flex-direction:column;flex:1;overflow:hidden;gap:0}
 .body-top{display:flex;flex:1;overflow:hidden;min-height:0}
@@ -249,7 +254,6 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
 .modal-search{width:100%;height:30px;padding:0 10px;margin-bottom:8px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);outline:none}
 .modal-search:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-mid)}
 @media(max-width:1600px){
-  .sidebar{width:200px;flex-basis:200px}
   .survey-config-col{width:220px}.cascade-col{width:235px}
   .preview-tree{min-width:1040px;gap:20px}.preview-tree-col{width:190px;flex-basis:190px}
 }
@@ -260,21 +264,18 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
 </head>
 <body class="association-prototype">
 <div class="shell">
-  <aside class="sidebar">
-    <div class="side-brand">
-      <div class="side-mark">T</div>
-      <span>TCS 平台</span>
-    </div>
-    <nav class="side-nav">
-      <div class="side-section"><span class="side-dot"></span><span>权限管理</span></div><div class="side-child muted">用户管理</div><div class="side-child muted">角色管理</div><div class="side-child muted">菜单管理</div>
-      <div class="side-section"><span class="side-dot"></span><span>问卷管理</span></div><div class="side-child muted">问卷列表</div>
-      <div class="side-section"><span class="side-dot"></span><span>素材管理</span></div><div class="side-child muted">链接库</div><div class="side-child muted">图标库</div><div class="side-child muted">背景图</div>
-      <div class="side-section"><span class="side-dot"></span><span>审批管理</span></div><div class="side-child muted">问卷发布审批</div><div class="side-child muted">调查方案审批</div><div class="side-child muted">我的审批</div><div class="side-child muted">人工审核点评</div><div class="side-child muted">自定义字段报表配置</div>
-      <div class="side-section active"><span class="side-dot"></span><span>统计报表</span></div><div class="side-child muted">车主统计</div><div class="side-child current">维度关联配置</div><div class="side-child muted">推送日志</div><div class="side-child muted">点评奖励发放日志</div><div class="side-child muted">tcs问题表列表</div><div class="side-child muted">tcs客户表列表</div><div class="side-child muted">问卷报表明细</div>
-      <div class="side-section"><span class="side-dot"></span><span>定向推送管理</span></div><div class="side-child muted">推送列表</div><div class="side-child muted">选择推送内容</div><div class="side-child muted">选择推送方式</div><div class="side-child muted">选择推送对象</div><div class="side-child muted">选择推送时间</div><div class="side-child muted">确认信息</div><div class="side-child muted">完成</div>
-      <div class="side-section"><span class="side-dot"></span><span>系统管理</span></div><div class="side-child muted">操作日志</div>
+  <aside class="tcs-sidebar" aria-label="系统菜单">
+    <div class="tcs-brand"><span class="tcs-brand-orbit">NISSAN</span><span class="tcs-brand-text"><b>微信客户调研平台</b><small>TCS</small></span></div>
+    <nav class="tcs-main-nav" aria-label="系统菜单">
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-permissions"><span class="tcs-side-icon" aria-hidden="true">♙</span><span>权限管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-permissions"><button type="button" data-placeholder>用户管理</button><button type="button" data-placeholder>角色管理</button><button type="button" data-placeholder>菜单管理</button></div></div>
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-questionnaires"><span class="tcs-side-icon" aria-hidden="true">▣</span><span>问卷管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-questionnaires"><button type="button" data-placeholder>问卷列表</button></div></div>
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-approvals"><span class="tcs-side-icon" aria-hidden="true">⌁</span><span>审批管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-approvals"><button type="button" data-placeholder>问卷发布审批</button><a href="../../index.html?view=review">人工审核点评</a><button type="button" data-placeholder>调查方案审批</button><button type="button" data-placeholder>我的审批</button></div></div>
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-assets"><span class="tcs-side-icon" aria-hidden="true">▤</span><span>素材管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-assets"><button type="button" data-placeholder>链接库</button><button type="button" data-placeholder>图标库</button></div></div>
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-statistics"><span class="tcs-side-icon" aria-hidden="true">◔</span><span>统计报表</span><i>⌃</i></button><div class="tcs-subnav" id="nav-statistics"><button type="button" data-placeholder>车主统计TCS</button><button type="button" data-placeholder>未点评里推送日志</button><a href="../../index.html?view=question">问题表明细</a><a href="../../index.html?view=customer">客户表明细</a><button type="button" data-placeholder>点评奖励发放日志</button><a href="../../index.html?view=duration">答题时长统计</a><button type="button" data-placeholder>逻辑树管理</button><a class="active" aria-current="page" href="./association.html?feature=F02&amp;preview=20261012-no-layer">逻辑树关联配置</a><a href="../../index.html?view=survey">问卷报表明细</a></div></div>
+      <div class="tcs-nav-group"><button class="tcs-nav-parent open" type="button" aria-expanded="true" aria-controls="nav-configuration"><span class="tcs-side-icon" aria-hidden="true">⚿</span><span>配置管理</span><i>⌃</i></button><div class="tcs-subnav" id="nav-configuration"><a href="../../index.html?view=sampleValidity">系统样本有效性</a><button type="button" data-placeholder>积分发放配置</button></div></div>
     </nav>
   </aside>
+  <div class="tcs-menu-toast" role="status" aria-live="polite" hidden></div>
 
 
   <div class="workspace">
@@ -1458,6 +1459,27 @@ function saveAll(){
 <script src="../annotations/association-config.js"></script>
 <script src="../annotations/annotations.js?v=20261012-no-layer"></script>
 <script src="../annotations/annotation-runtime.js"></script>
+<script>
+document.querySelectorAll('.tcs-nav-parent').forEach(button => {
+  button.addEventListener('click', () => {
+    const expanded = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', String(expanded));
+    button.classList.toggle('open', expanded);
+    document.getElementById(button.getAttribute('aria-controls')).hidden = !expanded;
+    button.querySelector('i').textContent = expanded ? '⌃' : '⌄';
+  });
+});
+let menuToastTimer;
+document.querySelectorAll('.tcs-subnav [data-placeholder]').forEach(button => {
+  button.addEventListener('click', () => {
+    const toast = document.querySelector('.tcs-menu-toast');
+    toast.textContent = `${button.textContent.trim()}页面暂未接入`;
+    toast.hidden = false;
+    clearTimeout(menuToastTimer);
+    menuToastTimer = setTimeout(() => { toast.hidden = true; }, 2600);
+  });
+});
+</script>
 </div>
 </body>
 </html>
