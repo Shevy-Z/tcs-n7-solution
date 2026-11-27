@@ -112,6 +112,11 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
 .lv4-b{background:#FFF1F2;color:#9F1239}
 .lv5-b{background:#F5F3FF;color:#5B21B6}
 .cc-hdr-name{font-size:12px;font-weight:500;color:var(--text2)}
+.cc-group-toggle,.source-group-toggle{border:1px solid #BFDBFE;border-radius:4px;background:#EFF6FF;color:#1D4ED8;cursor:pointer;font-family:inherit;font-size:10px;white-space:nowrap}
+.cc-group-toggle{padding:2px 6px}
+.source-group-toggle{padding:1px 6px}
+.cc-group-toggle:hover,.source-group-toggle:hover{background:#DBEAFE;border-color:#93C5FD}
+.cc-group-toggle:focus-visible,.source-group-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .cc-sel-cnt{font-size:10px;color:var(--text3);background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:10px}
 .cc-layer-progress{display:flex;flex-wrap:wrap;font-size:10px;line-height:1.5;color:var(--text2)}
 .cc-layer-progress span{white-space:nowrap}
@@ -141,6 +146,7 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
 .q-trigger{display:flex;align-items:flex-start;gap:4px;margin-top:2px;padding-left:20px;font-size:10px;color:var(--text3);line-height:1.45}
 .q-trigger-label{color:var(--amber);flex-shrink:0}
 .parent-source{margin:6px 8px 4px;padding:7px 9px;border:1px solid #FCD34D;border-radius:var(--radius-sm);background:var(--amber-light);font-size:11px;line-height:1.45;color:var(--text2)}
+.parent-source-head{display:flex;align-items:center;gap:6px}
 .parent-source strong{color:var(--amber);font-weight:500}
 .parent-source-title{display:block;color:var(--text);font-weight:500;margin-top:2px}
 
@@ -620,6 +626,8 @@ let questionLevels={};
 let currentTreeId=null;
 // 每层已选的题目 id 集合
 let layerSelected=[new Set(),new Set(),new Set(),new Set(),new Set()];
+// 仅控制“来源父题”下题目卡片的显示，不影响勾选和维度配置。
+let collapsedSourceGroups=new Set();
 // 激活的层数
 let activeLayers=1;
 // 已选问卷
@@ -831,6 +839,7 @@ function clearChildMappings(qId,lv,sid){
 function clearChildSelections(qId,lv,sid){
   const childLv=lv+1;
   if(childLv>=5)return;
+  collapsedSourceGroups.delete(sourceGroupKey(childLv,sid,qId));
   const key=['L1','L2','L3','L4','L5'][childLv];
   const qTree=SURVEY_TREE[sid];if(!qTree)return;
   const children=(qTree[key]&&qTree[key][qId])||[];
@@ -847,7 +856,8 @@ function onTreeChange(){
     treeStates[lastTreeId]={
       mappings:Object.fromEntries(Object.entries(mappings).map(([id])=>[id,[...getMappedNodeIds(id)]])),
       reservedMappings:Object.fromEntries(Object.entries(reservedMappings).map(([k,v])=>[k,[...v]])),
-      layerSelected:layerSelected.map(set=>[...set])
+      layerSelected:layerSelected.map(set=>[...set]),
+      collapsedSourceGroups:[...collapsedSourceGroups]
     };
   }
   currentTreeId=document.getElementById('tree-select').value||null;
@@ -856,8 +866,9 @@ function onTreeChange(){
     mappings=Object.fromEntries(Object.entries(state.mappings).map(([id,value])=>[id,Array.isArray(value)?[...value]:[value]]));
     reservedMappings=Object.fromEntries(Object.entries(state.reservedMappings||{}).map(([k,v])=>[k,new Set(v)]));
     layerSelected=(state.layerSelected||[]).map(items=>new Set(items));
+    collapsedSourceGroups=new Set(state.collapsedSourceGroups||[]);
   }else if(lastTreeId){
-    mappings={};reservedMappings={};layerSelected=[new Set(),new Set(),new Set(),new Set(),new Set()];
+    mappings={};reservedMappings={};layerSelected=[new Set(),new Set(),new Set(),new Set(),new Set()];collapsedSourceGroups=new Set();
   }
   lastTreeId=currentTreeId;
   recomputeActiveLayers();renderCascade();renderPreview();
@@ -902,6 +913,7 @@ function removeSurvey(id){
     else if(v)Object.values(v).flat().forEach(q=>allQIds.add(q.id));
   });
   allQIds.forEach(qid=>{delete mappings[qid];delete reservedMappings[qid];layerSelected.forEach(s=>s.delete(qid));});
+  [...collapsedSourceGroups].forEach(key=>{if(key.startsWith(id+':'))collapsedSourceGroups.delete(key);});
   if(activeSurveyId===id)activeSurveyId=selectedSurveys[0]&&selectedSurveys[0].id;
   recomputeActiveLayers();
   renderSurveyTags();renderCascade();renderPreview();
@@ -995,6 +1007,34 @@ function getQuestionsForLayer(lv){
   return items;
 }
 
+function sourceGroupKey(lv,sid,parentId){return `${sid}:${lv}:${parentId}`;}
+
+function getSourceGroups(lv,items){
+  if(lv===0)return [];
+  const groups=new Map();
+  items.forEach(q=>{
+    const parentId=q.srcId||'unknown';
+    if(!groups.has(parentId))groups.set(parentId,[]);
+    groups.get(parentId).push(q);
+  });
+  return [...groups].map(([parentId,questions])=>({
+    parentId,questions,sid:questions[0].sid,key:sourceGroupKey(lv,questions[0].sid,parentId)
+  }));
+}
+
+function toggleSourceGroup(key){
+  if(collapsedSourceGroups.has(key))collapsedSourceGroups.delete(key);
+  else collapsedSourceGroups.add(key);
+  renderCascade();
+}
+
+function toggleLayerSourceGroups(lv){
+  const groups=getSourceGroups(lv,getQuestionsForLayer(lv));
+  const collapse=groups.some(group=>!collapsedSourceGroups.has(group.key));
+  groups.forEach(group=>{if(collapse)collapsedSourceGroups.add(group.key);else collapsedSourceGroups.delete(group.key);});
+  renderCascade();
+}
+
 function renderCascade(){
   const area=document.getElementById('cascade-area');
   area.innerHTML='';
@@ -1013,6 +1053,8 @@ function renderCascade(){
     col.className='cascade-col';
 
     const items=getQuestionsForLayer(lv);
+    const sourceGroups=getSourceGroups(lv,items);
+    const anyGroupExpanded=sourceGroups.some(group=>!collapsedSourceGroups.has(group.key));
     const questionIds=new Set(items.map(q=>q.id));
     const totalCnt=questionIds.size;
     const configuredCnt=[...questionIds].filter(id=>getMappedNodeIds(id).length||(reservedMappings[id]&&reservedMappings[id].size)).length;
@@ -1024,9 +1066,12 @@ function renderCascade(){
       <div class="cc-hdr-left">
         <span class="cc-lv-badge ${LV_BADGES[lv]}">${LV_NAMES[lv]}</span>
         <span class="cc-hdr-name">题目选择</span>
+        ${sourceGroups.length?`<button class="cc-group-toggle" type="button" aria-expanded="${anyGroupExpanded}">${anyGroupExpanded?'全部收起':'全部展开'}</button>`:''}
       </div>
       <div class="cc-layer-progress"${lv===0?' data-anno="assoc-layer-stats"':''}><span>共 ${totalCnt} 题，</span><span>已配置 ${configuredCnt} 题，</span><span>未配置 ${totalCnt-configuredCnt} 题</span></div>
     `;
+    const layerToggle=hdr.querySelector('.cc-group-toggle');
+    if(layerToggle)layerToggle.onclick=()=>toggleLayerSourceGroups(lv);
     col.appendChild(hdr);
 
     // 搜索
@@ -1079,19 +1124,17 @@ function renderCascade(){
       if(lv===0){
         items.forEach(appendQuestion);
       } else {
-        const groupedByParent={};
-        items.forEach(q=>{
-          const key=q.srcId||'unknown';
-          if(!groupedByParent[key])groupedByParent[key]=[];
-          groupedByParent[key].push(q);
-        });
-        Object.entries(groupedByParent).forEach(([parentId,qs])=>{
-          const parentQ=findQuestionInSurvey(qs[0].sid,parentId);
+        sourceGroups.forEach(group=>{
+          const {parentId,questions,key}=group;
+          const collapsed=collapsedSourceGroups.has(key);
+          const parentQ=findQuestionInSurvey(group.sid,parentId);
           const source=document.createElement('div');
           source.className='parent-source';
-          source.innerHTML=`<strong>来源父题</strong><span class="parent-source-title">${parentQ?parentQ.val:'未找到父题'}</span><span class="parent-source-id">题目ID：${parentId}</span>`;
+          source.innerHTML=`<div class="parent-source-head"><strong>来源父题</strong>${questions.length>1?`<button class="source-group-toggle" type="button" aria-expanded="${!collapsed}">${collapsed?'展开':'收起'}子题 (${questions.length})</button>`:''}</div><span class="parent-source-title">${parentQ?parentQ.val:'未找到父题'}</span><span class="parent-source-id">题目ID：${parentId}</span>`;
+          const groupToggle=source.querySelector('.source-group-toggle');
+          if(groupToggle)groupToggle.onclick=()=>toggleSourceGroup(key);
           body.appendChild(source);
-          qs.forEach(appendQuestion);
+          if(!collapsed)questions.forEach(appendQuestion);
         });
       }
     }
@@ -1408,7 +1451,8 @@ function saveAll(){
   treeStates[currentTreeId]={
     mappings:Object.fromEntries(Object.entries(mappings).map(([id])=>[id,[...getMappedNodeIds(id)]])),
     reservedMappings:Object.fromEntries(Object.entries(reservedMappings).map(([k,v])=>[k,[...v]])),
-    layerSelected:layerSelected.map(set=>[...set])
+    layerSelected:layerSelected.map(set=>[...set]),
+    collapsedSourceGroups:[...collapsedSourceGroups]
   };
   btn.textContent='✓ 已保存';btn.style.background='#15803D';
   setTimeout(()=>{btn.textContent='保存';btn.style.background='';},1500);
