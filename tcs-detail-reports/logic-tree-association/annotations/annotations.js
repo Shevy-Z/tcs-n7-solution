@@ -33,7 +33,7 @@ window.AnnotationData = {
       id: '5', page: 'association', target: '[data-anno="assoc-export-current-vs-sample"]', title: 'F03 · 当前配置与 Excel 样例',
       sections: {
         interactionDesc: '“下载当前配置 CSV”读取节点弹窗确认后的页面配置状态，导出全部逐题记录；“下载 Excel 样例”提供固定参考文件。',
-        otherDesc: '当前为静态演示，样例包含 2 张问卷、62 道题、25 列；实际题目数随已添加问卷变化。点击标注只打开预览，不下载文件。'
+        otherDesc: '当前为静态演示，页面预置 2 张问卷、共 70 道题、25 列；实际题目数随已添加问卷变化。Excel 样例是固定参考文件。点击标注只打开预览，不下载文件。'
       }
     }
   ],
