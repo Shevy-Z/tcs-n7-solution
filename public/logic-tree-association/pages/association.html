@@ -392,14 +392,16 @@ const SV_COLORS=['sv-c0','sv-c1','sv-c2','sv-c3'];
 
 // 模拟问卷库（实际有几千张）
 const SURVEY_DB=[
-  {id:'sA',name:'新车交付外观满意度调查',code:'QN-A001',cnt:5},
-  {id:'sB',name:'售后回访外观问题定位',code:'QN-B001',cnt:5},
+  {id:'sA',name:'新车交付外观满意度调查',code:'QN-A001',cnt:35},
+  {id:'sB',name:'售后回访外观问题定位',code:'QN-B001',cnt:35},
 ];
 
 const SURVEY_TREE={
   sA:{
     L1:[
       {id:'a1',val:'您对本次新车交付时的整体外观是否满意？',type:'评分题',note:'1–2分不满意 → 展示Q2'},
+      {id:'a1b',val:'您对本次新车交付时的车身颜色是否满意？',type:'评分题'},
+      {id:'a1c',val:'您对本次新车交付时的漆面质量是否满意？',type:'评分题'},
     ],
     L2:{
       a1:[
@@ -408,6 +410,8 @@ const SURVEY_TREE={
         {id:'a2c',val:'您主要对哪方面的漆面质量不满意？',type:'单选题'},
         {id:'a2d',val:'您认为车辆空气动力学设计是否存在问题？',type:'单选题'},
       ],
+      a1b:[{id:'a2e',val:'您认为车身颜色主要存在哪方面的问题？',type:'单选题'}],
+      a1c:[{id:'a2f',val:'您认为漆面质量主要存在哪方面的问题？',type:'单选题'}],
     },
     L3:{
       a2a:[
@@ -474,6 +478,8 @@ const SURVEY_TREE={
   sB:{
     L1:[
       {id:'b1',val:'您本次投诉的问题是否属于外观类问题？',type:'单选题',note:'选"是" → 展示Q2'},
+      {id:'b1b',val:'您反馈的问题是否与车身颜色有关？',type:'单选题'},
+      {id:'b1c',val:'您反馈的问题是否与漆面质量有关？',type:'单选题'},
     ],
     L2:{
       b1:[
@@ -482,6 +488,8 @@ const SURVEY_TREE={
         {id:'b2c',val:'您反馈的外观问题属于漆面质量类吗？',type:'单选题'},
         {id:'b2d',val:'您反馈的外观问题属于空气动力学类吗？',type:'单选题'},
       ],
+      b1b:[{id:'b2e',val:'车身颜色问题主要体现在哪方面？',type:'单选题'}],
+      b1c:[{id:'b2f',val:'漆面质量问题主要体现在哪方面？',type:'单选题'}],
     },
     L3:{
       b2a:[
@@ -1400,7 +1408,7 @@ function saveAll(){
 </script>
 <script src="../assets/js/association-export.js?v=20261126-f02-multiselect"></script>
 <script src="../annotations/association-config.js"></script>
-<script src="../annotations/annotations.js?v=20261126-f02-multiselect"></script>
+<script src="../annotations/annotations.js?v=20261127-l1-three"></script>
 <script src="../annotations/annotation-runtime.js"></script>
 <script>
 document.querySelectorAll('.tcs-nav-parent').forEach(button => {
