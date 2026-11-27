@@ -995,6 +995,14 @@ function getQuestionsForLayer(lv){
   return items;
 }
 
+// 同一题关联多个维度时，每个维度在当前层级单独占一行；题目 ID 仍保持唯一。
+function getQuestionDisplayRows(items){
+  return items.flatMap(q=>{
+    const nodeIds=getMappedNodeIds(q.id);
+    return nodeIds.length>1?nodeIds.map(nodeId=>({...q,displayNodeId:nodeId})):[q];
+  });
+}
+
 function renderCascade(){
   const area=document.getElementById('cascade-area');
   area.innerHTML='';
@@ -1013,6 +1021,7 @@ function renderCascade(){
     col.className='cascade-col';
 
     const items=getQuestionsForLayer(lv);
+    const displayRows=getQuestionDisplayRows(items);
     const questionIds=new Set(items.map(q=>q.id));
     const totalCnt=questionIds.size;
     const configuredCnt=[...questionIds].filter(id=>getMappedNodeIds(id).length||(reservedMappings[id]&&reservedMappings[id].size)).length;
@@ -1025,7 +1034,7 @@ function renderCascade(){
         <span class="cc-lv-badge ${LV_BADGES[lv]}">${LV_NAMES[lv]}</span>
         <span class="cc-hdr-name">题目选择</span>
       </div>
-      <div class="cc-layer-progress"${lv===0?' data-anno="assoc-layer-stats"':''}><span>共 ${totalCnt} 题，</span><span>已配置 ${configuredCnt} 题，</span><span>未配置 ${totalCnt-configuredCnt} 题</span></div>
+      <div class="cc-layer-progress"${lv===0?' data-anno="assoc-layer-stats"':''}><span>共 ${totalCnt} 题，</span><span>已配置 ${configuredCnt} 题，</span><span>未配置 ${totalCnt-configuredCnt} 题</span>${displayRows.length>totalCnt?`<span>，展示 ${displayRows.length} 条维度关联</span>`:''}</div>
     `;
     col.appendChild(hdr);
 
@@ -1045,7 +1054,8 @@ function renderCascade(){
     } else {
       function appendQuestion(q){
         const isSelected=layerSelected[lv].has(q.id);
-        const nodes=getMappedNodeIds(q.id).map(id=>getTree()&&findNode(getTree().nodes,id)).filter(Boolean);
+        const nodeIds=q.displayNodeId?[q.displayNodeId]:getMappedNodeIds(q.id);
+        const nodes=nodeIds.map(id=>getTree()&&findNode(getTree().nodes,id)).filter(Boolean);
         const reserved=[...(reservedMappings[q.id]||[])];
         const parentQ=lv>0&&q.srcId?findQuestionInSurvey(q.sid,q.srcId):null;
         const triggerText=lv>0?getTriggerText(q,lv):'';
@@ -1053,6 +1063,7 @@ function renderCascade(){
         const item=document.createElement('div');
         item.className='q-item'+(isSelected?' selected':'');
         item.dataset.qid=q.id;
+        if(q.displayNodeId)item.dataset.nodeId=q.displayNodeId;
 
         item.innerHTML=`
           <div class="q-meta"><span class="q-survey">${survey?survey.name:''}</span><span class="q-id">题目ID：${q.id}</span></div>
@@ -1077,10 +1088,10 @@ function renderCascade(){
       }
 
       if(lv===0){
-        items.forEach(appendQuestion);
+        displayRows.forEach(appendQuestion);
       } else {
         const groupedByParent={};
-        items.forEach(q=>{
+        displayRows.forEach(q=>{
           const key=q.srcId||'unknown';
           if(!groupedByParent[key])groupedByParent[key]=[];
           groupedByParent[key].push(q);
@@ -1150,7 +1161,7 @@ function openModal(qId,lv,e,options){
   // 普通节点和系统保留节点属于同一组选项；兼容旧数据时普通节点优先。
   pendingReserved=new Set(modalPickedNodeIds.size?[]:[...(reservedMappings[qId]||[])].slice(0,1));
   document.getElementById('modal-title').textContent='选择维度节点';
-  document.getElementById('modal-sub').innerHTML=q?`<div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${q.val}</div><div style="font-size:10px;color:var(--text3)">题目ID：${q.id} · 可多选 ${LV_NAMES[lv]} 节点；下层题目将显示每个已选节点的子节点</div>`:'请选择与当前题目对应的维度节点';
+  document.getElementById('modal-sub').innerHTML=q?`<div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${q.val}</div><div style="font-size:10px;color:var(--text3)">题目ID：${q.id} · 可多选 ${LV_NAMES[lv]} 节点；每个已选节点在本层单独显示一条，并提供各自的后续节点</div>`:'请选择与当前题目对应的维度节点';
   const ms=document.getElementById('modal-search');
   if(ms) ms.value='';
   renderModalList();
@@ -1416,7 +1427,7 @@ function saveAll(){
 </script>
 <script src="../assets/js/association-export.js?v=20261126-f02-multiselect"></script>
 <script src="../annotations/association-config.js"></script>
-<script src="../annotations/annotations.js?v=20261127-l1-three"></script>
+<script src="../annotations/annotations.js?v=20261127-node-rows"></script>
 <script src="../annotations/annotation-runtime.js"></script>
 <script>
 document.querySelectorAll('.tcs-nav-parent').forEach(button => {
