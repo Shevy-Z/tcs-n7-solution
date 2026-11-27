@@ -112,6 +112,11 @@ body{font-family:'DM Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-s
 .lv4-b{background:#FFF1F2;color:#9F1239}
 .lv5-b{background:#F5F3FF;color:#5B21B6}
 .cc-hdr-name{font-size:12px;font-weight:500;color:var(--text2)}
+.cc-branch-toggle,.q-branch-toggle{border:1px solid #BFDBFE;border-radius:4px;background:#EFF6FF;color:#1D4ED8;cursor:pointer;font-family:inherit;white-space:nowrap}
+.cc-branch-toggle{margin-left:auto;padding:3px 6px;font-size:10px}
+.q-branch-toggle{flex-shrink:0;padding:2px 5px;font-size:10px}
+.cc-branch-toggle:hover,.q-branch-toggle:hover{background:#DBEAFE;border-color:#93C5FD}
+.cc-branch-toggle:focus-visible,.q-branch-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .cc-sel-cnt{font-size:10px;color:var(--text3);background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:10px}
 .cc-layer-progress{display:flex;flex-wrap:wrap;font-size:10px;line-height:1.5;color:var(--text2)}
 .cc-layer-progress span{white-space:nowrap}
@@ -620,6 +625,8 @@ let questionLevels={};
 let currentTreeId=null;
 // 每层已选的题目 id 集合
 let layerSelected=[new Set(),new Set(),new Set(),new Set(),new Set()];
+// 仅控制子题目的显示，不改变题目勾选或维度映射。
+let collapsedQuestionBranches=new Set();
 // 激活的层数
 let activeLayers=1;
 // 已选问卷
@@ -824,6 +831,7 @@ function clearChildMappings(qId,lv,sid){
     delete mappings[child.id];
     delete reservedMappings[child.id];
     layerSelected[childLv].delete(child.id);
+    collapsedQuestionBranches.delete(child.id);
     clearChildMappings(child.id,childLv,sid);
   });
 }
@@ -838,6 +846,7 @@ function clearChildSelections(qId,lv,sid){
     layerSelected[childLv].delete(child.id);
     delete mappings[child.id];
     delete reservedMappings[child.id];
+    collapsedQuestionBranches.delete(child.id);
     clearChildSelections(child.id,childLv,sid);
   });
 }
@@ -847,7 +856,8 @@ function onTreeChange(){
     treeStates[lastTreeId]={
       mappings:Object.fromEntries(Object.entries(mappings).map(([id])=>[id,[...getMappedNodeIds(id)]])),
       reservedMappings:Object.fromEntries(Object.entries(reservedMappings).map(([k,v])=>[k,[...v]])),
-      layerSelected:layerSelected.map(set=>[...set])
+      layerSelected:layerSelected.map(set=>[...set]),
+      collapsedQuestionBranches:[...collapsedQuestionBranches]
     };
   }
   currentTreeId=document.getElementById('tree-select').value||null;
@@ -856,8 +866,9 @@ function onTreeChange(){
     mappings=Object.fromEntries(Object.entries(state.mappings).map(([id,value])=>[id,Array.isArray(value)?[...value]:[value]]));
     reservedMappings=Object.fromEntries(Object.entries(state.reservedMappings||{}).map(([k,v])=>[k,new Set(v)]));
     layerSelected=(state.layerSelected||[]).map(items=>new Set(items));
+    collapsedQuestionBranches=new Set(state.collapsedQuestionBranches||[]);
   }else if(lastTreeId){
-    mappings={};reservedMappings={};layerSelected=[new Set(),new Set(),new Set(),new Set(),new Set()];
+    mappings={};reservedMappings={};layerSelected=[new Set(),new Set(),new Set(),new Set(),new Set()];collapsedQuestionBranches=new Set();
   }
   lastTreeId=currentTreeId;
   recomputeActiveLayers();renderCascade();renderPreview();
@@ -901,7 +912,7 @@ function removeSurvey(id){
     if(Array.isArray(v))v.forEach(q=>allQIds.add(q.id));
     else if(v)Object.values(v).flat().forEach(q=>allQIds.add(q.id));
   });
-  allQIds.forEach(qid=>{delete mappings[qid];delete reservedMappings[qid];layerSelected.forEach(s=>s.delete(qid));});
+  allQIds.forEach(qid=>{delete mappings[qid];delete reservedMappings[qid];layerSelected.forEach(s=>s.delete(qid));collapsedQuestionBranches.delete(qid);});
   if(activeSurveyId===id)activeSurveyId=selectedSurveys[0]&&selectedSurveys[0].id;
   recomputeActiveLayers();
   renderSurveyTags();renderCascade();renderPreview();
@@ -976,6 +987,12 @@ function renderSurveyConfigColumn(area){
 }
 
 // ── 级联列 ──
+function getQuestionChildren(qId,lv,sid){
+  if(lv>=4)return [];
+  const tree=SURVEY_TREE[sid];
+  return (tree&&tree[`L${lv+2}`]&&tree[`L${lv+2}`][qId])||[];
+}
+
 function getQuestionsForLayer(lv){
   const LV_KEYS=['L1','L2','L3','L4','L5'];
   const key=LV_KEYS[lv];
@@ -987,12 +1004,27 @@ function getQuestionsForLayer(lv){
     (tree.L1||[]).forEach(q=>items.push({...q,sid:sv.id,si}));
   } else {
     const prevSelected=layerSelected[lv-1];
+    const prevVisible=new Set(getQuestionsForLayer(lv-1).map(q=>q.id));
     const mapObj=tree[key]||{};
     prevSelected.forEach(prevId=>{
+      if(!prevVisible.has(prevId)||collapsedQuestionBranches.has(prevId))return;
       (mapObj[prevId]||[]).forEach(q=>items.push({...q,sid:sv.id,si,srcId:prevId}));
     });
   }
   return items;
+}
+
+function toggleQuestionChildren(qId){
+  if(collapsedQuestionBranches.has(qId))collapsedQuestionBranches.delete(qId);
+  else collapsedQuestionBranches.add(qId);
+  renderCascade();
+}
+
+function toggleLayerChildren(lv){
+  const parents=getQuestionsForLayer(lv).filter(q=>layerSelected[lv].has(q.id)&&getQuestionChildren(q.id,lv,q.sid).length);
+  const collapse=parents.some(q=>!collapsedQuestionBranches.has(q.id));
+  parents.forEach(q=>{if(collapse)collapsedQuestionBranches.add(q.id);else collapsedQuestionBranches.delete(q.id);});
+  renderCascade();
 }
 
 function renderCascade(){
@@ -1016,6 +1048,8 @@ function renderCascade(){
     const questionIds=new Set(items.map(q=>q.id));
     const totalCnt=questionIds.size;
     const configuredCnt=[...questionIds].filter(id=>getMappedNodeIds(id).length||(reservedMappings[id]&&reservedMappings[id].size)).length;
+    const expandable=items.filter(q=>layerSelected[lv].has(q.id)&&getQuestionChildren(q.id,lv,q.sid).length);
+    const hasExpanded=expandable.some(q=>!collapsedQuestionBranches.has(q.id));
 
     // 列头
     const hdr=document.createElement('div');
@@ -1024,9 +1058,12 @@ function renderCascade(){
       <div class="cc-hdr-left">
         <span class="cc-lv-badge ${LV_BADGES[lv]}">${LV_NAMES[lv]}</span>
         <span class="cc-hdr-name">题目选择</span>
+        ${expandable.length?`<button class="cc-branch-toggle" type="button" aria-expanded="${hasExpanded}">${hasExpanded?'全部收起子题':'全部展开子题'}</button>`:''}
       </div>
       <div class="cc-layer-progress"${lv===0?' data-anno="assoc-layer-stats"':''}><span>共 ${totalCnt} 题，</span><span>已配置 ${configuredCnt} 题，</span><span>未配置 ${totalCnt-configuredCnt} 题</span></div>
     `;
+    const layerToggle=hdr.querySelector('.cc-branch-toggle');
+    if(layerToggle)layerToggle.onclick=()=>toggleLayerChildren(lv);
     col.appendChild(hdr);
 
     // 搜索
@@ -1041,10 +1078,14 @@ function renderCascade(){
     body.id=`cc-body-${lv}`;
 
     if(items.length===0){
-      body.innerHTML=lv===0?'<div class="cc-empty">已选问卷中暂无题目</div>':`<div class="cc-empty">请先在${LV_NAMES[lv-1]}选择题目</div>`;
+      const previous=lv>0?getQuestionsForLayer(lv-1):[];
+      const hidden=previous.some(q=>layerSelected[lv-1].has(q.id)&&collapsedQuestionBranches.has(q.id)&&getQuestionChildren(q.id,lv-1,q.sid).length);
+      body.innerHTML=lv===0?'<div class="cc-empty">已选问卷中暂无题目</div>':`<div class="cc-empty">${hidden?'上一层子题目已收起':`请先在${LV_NAMES[lv-1]}选择题目`}</div>`;
     } else {
       function appendQuestion(q){
         const isSelected=layerSelected[lv].has(q.id);
+        const childCount=getQuestionChildren(q.id,lv,q.sid).length;
+        const isCollapsed=collapsedQuestionBranches.has(q.id);
         const nodes=getMappedNodeIds(q.id).map(id=>getTree()&&findNode(getTree().nodes,id)).filter(Boolean);
         const reserved=[...(reservedMappings[q.id]||[])];
         const parentQ=lv>0&&q.srcId?findQuestionInSurvey(q.sid,q.srcId):null;
@@ -1060,6 +1101,7 @@ function renderCascade(){
             <div class="q-chk"><span class="q-chk-mark">✓</span></div>
             <span class="q-label" title="${q.val}">${q.val}</span>
             <span class="q-type">${q.type}</span>
+            ${isSelected&&childCount>1?`<button class="q-branch-toggle" type="button" aria-expanded="${!isCollapsed}" aria-label="${isCollapsed?'展开':'收起'}题目 ${q.id} 的 ${childCount} 个子题目">${isCollapsed?'展开':'收起'}子题 (${childCount})</button>`:''}
           </div>
           <div class="q-dim">
             <span class="q-dim-arrow">↳</span>
@@ -1073,6 +1115,8 @@ function renderCascade(){
         `;
         item.querySelector('.q-chk').onclick=(e)=>{e.stopPropagation();toggleSelect(q.id,lv);};
         item.querySelector('.q-label').onclick=(e)=>{e.stopPropagation();toggleSelect(q.id,lv);};
+        const questionToggle=item.querySelector('.q-branch-toggle');
+        if(questionToggle)questionToggle.onclick=(e)=>{e.stopPropagation();toggleQuestionChildren(q.id);};
         body.appendChild(item);
       }
 
@@ -1097,6 +1141,7 @@ function renderCascade(){
     }
     col.appendChild(body);
     area.appendChild(col);
+    if(lv>0&&!items.length)break;
   }
 
 
@@ -1128,6 +1173,7 @@ function toggleSelect(qId,lv){
   if(wasSelected){
     if(!window.confirm('取消该题目会导致此题目的子题目全部清空，请确认。'))return;
     layerSelected[lv].delete(qId);
+    collapsedQuestionBranches.delete(qId);
     const q=getQuestionsForLayer(lv).find(x=>x.id===qId);
     delete mappings[qId];
     delete reservedMappings[qId];
@@ -1408,7 +1454,8 @@ function saveAll(){
   treeStates[currentTreeId]={
     mappings:Object.fromEntries(Object.entries(mappings).map(([id])=>[id,[...getMappedNodeIds(id)]])),
     reservedMappings:Object.fromEntries(Object.entries(reservedMappings).map(([k,v])=>[k,[...v]])),
-    layerSelected:layerSelected.map(set=>[...set])
+    layerSelected:layerSelected.map(set=>[...set]),
+    collapsedQuestionBranches:[...collapsedQuestionBranches]
   };
   btn.textContent='✓ 已保存';btn.style.background='#15803D';
   setTimeout(()=>{btn.textContent='保存';btn.style.background='';},1500);
